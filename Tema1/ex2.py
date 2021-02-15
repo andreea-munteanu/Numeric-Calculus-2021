@@ -54,7 +54,7 @@ b = u
 c = u*10000000
 In this case, the multiplication fails to be associative (in computer science only!).
 """
-print("Multiplication is associative: ", mul_is_associative(pow(u, -15), u, u*10000000)) # returns False
+print("Multiplication is associative: ", mul_is_associative(pow(u, -15), u, u*10000000))  # returns False
 
 
 
