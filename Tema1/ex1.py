@@ -39,4 +39,4 @@ def find_u():
     return machine_precision
 
 
-print(find_u())
+print(find_u()) # 1e-15
