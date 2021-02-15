@@ -16,7 +16,7 @@ def add_c(a, b):
 def check_statement(u) -> bool:
     """
     :param u: u = 10^m
-    :return: boolean value: true if 1.0 +c u = 1.0, false otherwise
+    :return: boolean value: true if 1.0 +c u != 1.0, false otherwise
     """
     return add_c(1.0, u) != 1.0
 
