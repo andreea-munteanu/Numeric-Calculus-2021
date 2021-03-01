@@ -70,7 +70,7 @@ def calculate_tangent_lorentz(val):
     b = 1
     f = b
     a = val
-    error = pow(10, -13)
+    error = pow(10, -12)
     if f == 0:
         f = error  # epsilon = 10^m, m = -13
     running = True
@@ -155,15 +155,16 @@ medium_error_cfm, medium_error_pol = 0, 0
 # calculating running time for all 10000:
 start_time = time.time()
 for i in range(0, len(x)):
-    a = x[i]
+    error_cfm = compute_error(calculate_tangent_lorentz(x[i]), compute_tan(x[i]))
+    error_pol = compute_error(polynomials_approximation(x[i]), compute_tan(x[i]))
     print(f'x[{i}] =', x[i], ', '
-          f'Continued fraction tan:[{calculate_tangent_lorentz(a)}],',
-          f'Polynomial tan: [{polynomials_approximation(a)}],'
-          f'Calculator tan: [{compute_tan(a)}],'
-          f'CF error: [{compute_error(calculate_tangent_lorentz(a), compute_tan(a))}],'
-          f'P error: [{compute_error(polynomials_approximation(a), compute_tan(a))}]')
-    medium_error_cfm += compute_error(calculate_tangent_lorentz(a), compute_tan(a))
-    medium_error_pol += compute_error(polynomials_approximation(a), compute_tan(a))
+          f'Continued fraction tan:[{calculate_tangent_lorentz(x[i])}],',
+          f'Polynomial tan: [{polynomials_approximation(x[i])}],'
+          f'Computer tan: [{compute_tan(x[i])}],'
+          f'Continued fraction error: [{error_cfm}],'
+          f'Polynomials approximation error: [{error_pol}]')
+    medium_error_cfm += error_cfm
+    medium_error_pol += error_pol
 # medium --> divided by size of x:
 medium_error_pol /= len(x)
 medium_error_cfm /= len(x)
