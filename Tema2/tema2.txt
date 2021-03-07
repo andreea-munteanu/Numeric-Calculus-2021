@@ -1,0 +1,65 @@
+Homework no. 2
+Let n be the system’s size,  - the computation error, A ∈ R
+n×n
+- a
+real, symmetric positive definite squared matrix, b ∈ R
+n
+- a vector with real
+elements.
+ Compute, when it is possible, the Cholesky decomposition for matrix A
+(A = LLT
+), where L is a lower triangular matrix with positive diagonal
+elements (lii > 0, ∀i) ;
+ Using this decomposition, compute the determinant of matrix A (det A =
+det L det L
+T
+) ;
+ With the above computed LLT decomposition, and using the substitution methods compute an approximative solution xChol for the system
+Ax = b;
+ Verify that your computations are correct by displaying the norm:
+kA
+initxChol − bk2
+(this norm should be smaller than 10−8
+, 10−9
+)
+Ainit and b
+init are the initial data, not those modified during computations. We denoted by || · ||2 the Euclidean norm.
+ Using one of the libraries mentioned on the lab’s web page, compute
+and display the solution a LU decomposition for matrix A and the
+solution for system Ax = b;
+ After computing the Cholesky decomposition A = LLT
+for the symmetric matrix A, compute an approximation for the inverse of this
+matrix, A
+−1
+Chol. Compute another approximation of this inverse using
+the library, A
+−1
+bibl. Display:
+||A
+−1
+Chol − A
+−1
+bibl||
+Use any matriceal norm implemented in the employed library.
+ Write (and use) functions for reading vectors and matrices from keyboard, file, random initialisation and functions for displaying vectors
+and matrices (on display and in file).
+Write your code so it could be tested (also) on systems with n > 100.
+1
+ Constraint: In your program use only one matrix, A and a vector d
+that contains the diagonal elements of the initial matrix A. The LLT
+decomposition will be computed and stored in lower triangular part of
+matrix A. By using this type of allocation, one does loses the diagonal
+elements of matrix A, thus the need to save these elements in vector
+d, di = a
+init
+ii .
+ As input data introduce a matrix that is only symmetric. If this matrix
+is not positive definite, the algorithm cannot compute the Cholesky factorization. In this situation stop the computations with an appropriate
+error message.
+Bonus 25 pt.: Compute the Cholesky decomposition for matrix A with
+the following storage restrictions: in your program, use for storing matrices
+A and L two vectors of size n(n + 1)/2. In these vectors one stores the
+elements from the lower triangular part of these matrices. For matrix A the
+elements from the upper triangular part can be accessed using the symmetry
+relation. With this new type of data storage, compute the solution of the
+linear system Ax = b, xChol.
