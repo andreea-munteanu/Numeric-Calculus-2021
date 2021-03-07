@@ -1,6 +1,7 @@
 import math
 import random
 import scipy
+from scipy import linalg
 import numpy as np
 
 
@@ -106,6 +107,22 @@ def check_diagonal_is_positive(A) -> bool:
 print("\nIs our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(M) else "No.")
 
 
+def library_cholesky_decomposition(A):
+    """
+    Function for getting the L, L_t Cholesky decomposition as computed by the numpy python library.
+
+    :param A: matrix
+    :return: L, L_t
+    """
+    L = scipy.linalg.cholesky(A, lower=True)     # lower triangular matrix in Cholensky decomposition for A:
+    L_t = scipy.linalg.cholesky(A, lower=False)  # upper ~
+    return L, L_t
+
+
+L, L_t = library_cholesky_decomposition(M)
+print("\nCholesky decomposition (numpy): \n", L, '\n\n', L_t, '\n')
+
+
 def cholesky_decomposition(A):
     """
     Function for computing the Cholesky decomposition of a matrix A.
@@ -113,24 +130,21 @@ def cholesky_decomposition(A):
     :param A: matrix for which we perform the Cholesky decomposition
     :return: L and transpose L (lower and upper triangular matrix)
     """
-    # L = scipy.linalg.cholesky(A, lower=True)     # lower triangular matrix in Cholensky decomposition for A:
-    # L_t = scipy.linalg.cholesky(A, lower=False)  # upper ~
-    # return L, L_t
 
     # lower triangular matrix in Cholesky decomposition for A:
-    L = np.zeros(n)
+    L = np.zeros([n, n])
     for row in range(0, n):
         for col in range(0, row + 1):
             s = 0
             if row == col:  # main diagonal
                 for p in range(0, col):
-                    s += L[row][p] ** 2
-                L[col][col] = math.sqrt(A[col][col] - s)
+                    s += L[row, p] ** 2
+                L[col, col] = math.sqrt(A[col, col] - s)
             else:
                 for p in range(0, col):
-                    s += L[row][p] * L[col][p]
-                if abs(L[col][col]) > eps:
-                    L[col][col] = (A[row][col] - s) / L[col][col]
+                    s += L[row, p] * L[col, p]
+                if abs(L[col, col]) > eps:
+                    L[col, col] = (A[row, col] - s) / L[col, col]
                 else:
                     print("Division by 0")
                     break
@@ -139,15 +153,15 @@ def cholesky_decomposition(A):
         # return lower and upper triangular matrix:
         return L, get_transpose(L)
     print("Error! Cholesky decomposition not possible.")
+    return None, None
 
 
-L, L_t = cholesky_decomposition(M)
-print("Cholesky decomposition: \n", L, '\n', L_t, '\n')
+# L, L_t = cholesky_decomposition(M)
+# print("\nCholesky decomposition: \n", L, '\n\n', L_t, '\n')
 
 
 def get_diagonal(matrix):
     """
-
     :param matrix:
     :return: array containing elements on main diagonal of matrix A
     """
@@ -172,11 +186,6 @@ def compute_det_A(L, L_t):
 
 print("\ndet(M) = ", compute_det_A(L, L_t))
 
-"""
-L * y   = b  --> first
-L_t * x = y  --> second
-"""
-
 
 def check_cholesky_is_correct(A) -> bool:
     """
@@ -187,13 +196,22 @@ def check_cholesky_is_correct(A) -> bool:
     :return: true if matrix multiplication is same as A_init, false otherwise
     """
     A_init = get_A_init(A)
-    L, L_t = cholesky_decomposition(A)
+    L, L_t = cholesky_decomposition(A)  # library_cholesky_decomposition(A) 
     product = np.matmul(L, L_t)
     for row in range(0, n):
         for col in range(0, n):
             if product[row][col] != A_init[row][col]:
                 return False
     return True
+
+
+print("\nIs our Cholesky decomposition correct? ", "Yes" if check_cholesky_is_correct(M) else "No")
+
+
+"""
+L * y   = b  --> first
+L_t * x = y  --> second
+"""
 
 
 def solve_Ly_equals_b(L, b):
