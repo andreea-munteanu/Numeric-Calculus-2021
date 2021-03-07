@@ -1,0 +1,262 @@
+import math
+import random
+import scipy
+
+import numpy as np
+
+
+def get_input_from_file():
+    """
+    Function for reading input from input file text.
+    :return:
+    """
+    n, eps, M, b = None, None, [], []
+    with open('in.txt', 'r') as file:
+        for i, line in enumerate(file):
+            if i == 0:  # 1st line: n
+                n = line
+            elif i == 1:  # 2nd line: eps
+                eps = line
+            else:
+                M.append([float(x) for x in line.split(' ')])
+                A = np.asarray(M)
+                print(A[2, 2])
+    return n, eps, A, b
+
+
+# n, eps, M, b = get_input_from_file()
+# print("n =", n)
+# print("eps =", eps)
+# print("M=", M)
+# print("b =", b)
+
+
+def generate_random_matrix(n):
+    """
+    Function for generating a matrix A with elements randomly chosen in (0, 10000).
+
+    :param n: size of square matrix A
+    :return: matrix A randomly generated
+    """
+    A = np.zeros(n)
+    for row in range(0, n):
+        for col in range(row, n):
+            A[row][col] = A[col][row] = random.uniform(0, 10001)
+    return A
+
+
+m = 8
+n = 3
+eps = pow(10, -m)
+M = np.matrix([[1.0, 0.0, 3.0],
+               [0.0, 4.0, 2.0],
+               [3.0, 2.0, 11.0]])
+b = [1.0, 2.0, 4.0]
+d = np.diag(M)  # vector of matrix main diagonal
+
+
+def get_transpose(A):
+    """
+    Function that returns the transpose of a matrix A.
+
+    :param A: matrix A
+    :return: transpose of A
+    """
+    A_T = np.zeros(n)
+    for row in range(0, n):
+        for col in range(0, n):
+            A_T[row][col] = A[col][row]
+    return A_T
+
+
+def check_matrix_symmetry(A) -> bool:
+    """
+    Boolean function determining whether a matrix A is symmetric (i.e., A is equal to its transpose).
+
+    :param A: matrix A
+    :return: boolean value (true if At = A, false otherwise)
+    """
+    for row in range(0, n):
+        for col in range(row, n):
+            if A[row][col] != A[col][row]:
+                return False
+    return True
+
+
+def get_inverse(A):
+    """
+    Function that returns the inverse matrix of matrix A.
+
+    :param A: matrix A
+    :return: inverse of A
+    """
+    copy_A = np.copy(A)
+    for row in range(0, n):
+        pass
+
+
+def get_A_init(A):
+    """
+
+    :param A: initial matrix A, before it undergoes any changes
+    :return: copy of matrix A
+    """
+    A_initial = np.copy(A)
+    return A_initial
+
+
+# det(A) = det(L)det(Lt) = l11**2 * l22**2 * ... lnn**2
+def LUDet(A):
+    p = 1
+    for index in range(0, n):
+        p *= A[index][index] ** 2
+    return p
+
+
+def check_diagonal_is_positive(A) -> bool:
+    """
+    Boolean function determining whether a matrix A has exclusively positive elements on its main diagonal.
+    :param A: matrix A
+    :return: true if l(i,i) > 0 for all i, false otherwise
+    """
+    for index in range(0, n):
+        if A[index][index] <= 0:
+            return False
+    return True
+
+
+def cholesky_decomposition(A):
+    """
+    Function for computing the Cholesky decomposition of a matrix A.
+
+    :param A: matrix for which we perform the Cholesky decomposition
+    :return: L and transpose L (lower and upper triangular matrix)
+    """
+    # L = scipy.linalg.cholesky(A, lower=True)     # lower triangular matrix in Cholensky decomposition for A:
+    # L_t = scipy.linalg.cholesky(A, lower=False)  # upper ~
+    # return L, L_t
+
+    # lower triangular matrix in Cholesky decomposition for A:
+    L = np.zeros(n)
+    for row in range(0, n):
+        for col in range(0, row + 1):
+            s = 0
+            if row == col:  # main diagonal
+                for p in range(0, col):
+                    s += L[row][p] ** 2
+                L[col][col] = math.sqrt(A[col][col] - s)
+            else:
+                for p in range(0, col):
+                    s += L[row][p] * L[col][p]
+                if L[col][col] > 0:
+                    L[col][col] = (A[row][col] - s) / L[col][col]
+    if check_diagonal_is_positive(L) is True:
+        return L, get_transpose(L)
+    return "Error! Cholesky decomposition not possible."
+
+
+def cholesky(A):
+    """
+    Function for computing the Cholesky decomposition of a matrix A.
+
+    :param A: matrix for which we perform the Cholensky decomposition
+    :return: A as
+    """
+    # L = scipy.linalg.cholesky(A, lower=True)     # lower triangular matrix in Cholensky decomposition for A:
+    # L_t = scipy.linalg.cholesky(A, lower=False)  # upper ~
+    # return L, L_t
+
+    possible = True
+    for p in range(0, n):
+        for row in range(p, n):
+            upper = 0
+            lower = 0
+            for col in range(0, p):
+                upper += A[p][col] * A[col][row]
+            A[p][row] -= upper
+            if row == p:
+                pass
+            else:
+                for col in range(0, p):
+                    lower = A[row][col] * A[col][p]
+                if abs(A[p][p] > eps):
+                    A[row][p] = (A[row][p] - lower) / A[p][p]
+                else:
+                    possible = False
+                    break
+    if possible is True and check_diagonal_is_positive(A):
+        return A
+    print("Division by 0!")
+    return possible
+
+
+"""
+L * y   = b  --> first
+L_t * x = y  --> second
+"""
+
+
+def check_cholesky(A) -> bool:
+    """
+    Boolean function for checking whether our Cholesky decomposition is correct.
+    A correct Cholesky decomposition of A = L * L_t will hold that L * L_t = A_init.
+
+    :param A: matrix A
+    :return: true if matrix multiplication is same as A_init, false otherwise
+    """
+    A_init = get_A_init(A)
+    L = cholesky(A)
+    L_t = get_transpose(L)
+    product = np.matmul(L, L_t)
+    for row in range(0, n):
+        for col in range(0, n):
+            if product[row][col] != A_init[row][col]:
+                return False
+    return True
+
+
+def solve_L_x_equals_b_system(L, b):
+    def solve_Ly_equals_b():
+        """
+        Direct substitution.
+
+        :param b:
+        :return:
+        """
+        Y = []
+        possible = True
+        for row in range(0, n):
+            y = b[row]
+            for col in range(0, row):
+                y -= L[row][col] * Y[col]
+            if abs(L[row][row]) <= eps:
+                print("Error! Can't perform division.")
+                possible = False
+            else:
+                Y.append(y / L[row][row])
+        if possible is True:
+            return Y
+
+    def solve_Lt_x_equals_y_star():
+        """
+        Inverse substitution.
+        :param x:
+        :return:
+        """
+        L_t = get_transpose(L)
+        X = np.zeros(n)
+        for row in range(n-1, 0, -1):
+            x = b[row]
+            for col in range(row + 1, n):
+                x -= X[col] * L_t[row][col]
+            if abs(L_t[row][row]) <= eps:
+                break
+            else:
+                X[row] = x / L_t[row][row]
+        return X
+
+    return solve_Ly_equals_b(), solve_Lt_x_equals_y_star()
+
+
+
+
