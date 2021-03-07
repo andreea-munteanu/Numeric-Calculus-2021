@@ -83,7 +83,7 @@ def check_matrix_symmetry(A) -> bool:
     return True
 
 
-def get_inverse(A):
+def get_inverse_by_hand(A):
     """
     Function that returns the inverse matrix of matrix A.
 
@@ -92,7 +92,17 @@ def get_inverse(A):
     """
     copy_A = np.copy(A)
     for row in range(0, n):
-        pass
+        return 1
+
+
+def get_inverse_by_lib(A):
+    """
+    Function that returns the inverse matrix of matrix A as computed by python's library.
+
+    :param A: matrix A
+    :return: inverse of A
+    """
+    return np.linalg.inv(A)
 
 
 def get_A_init(A):
@@ -127,7 +137,7 @@ def check_diagonal_is_positive(A) -> bool:
 
 def cholesky_decomposition(A):
     """
-    Function for computing the Cholesky decomposition of a matrix A.
+    Function for computing the Cholesky decomposition of a matrix A (as explained online).
 
     :param A: matrix for which we perform the Cholesky decomposition
     :return: L and transpose L (lower and upper triangular matrix)
@@ -157,7 +167,7 @@ def cholesky_decomposition(A):
 
 def cholesky(A):
     """
-    Function for computing the Cholesky decomposition of a matrix A.
+    Function for computing the Cholesky decomposition of a matrix A (as given in homework pdf).
 
     :param A: matrix for which we perform the Cholensky decomposition
     :return: A as
@@ -196,7 +206,7 @@ L_t * x = y  --> second
 """
 
 
-def check_cholesky(A) -> bool:
+def check_cholesky_is_correct(A) -> bool:
     """
     Boolean function for checking whether our Cholesky decomposition is correct.
     A correct Cholesky decomposition of A = L * L_t will hold that L * L_t = A_init.
@@ -215,7 +225,7 @@ def check_cholesky(A) -> bool:
     return True
 
 
-def solve_L_x_equals_b_system(L, b):
+def solve_system(L, b):
     def solve_Ly_equals_b():
         """
         Direct substitution.
@@ -237,7 +247,7 @@ def solve_L_x_equals_b_system(L, b):
         if possible is True:
             return Y
 
-    def solve_Lt_x_equals_y_star():
+    def solve_Lt_x_equals_y_star(Y):
         """
         Inverse substitution.
         :param x:
@@ -246,7 +256,7 @@ def solve_L_x_equals_b_system(L, b):
         L_t = get_transpose(L)
         X = np.zeros(n)
         for row in range(n-1, 0, -1):
-            x = b[row]
+            x = Y[row]
             for col in range(row + 1, n):
                 x -= X[col] * L_t[row][col]
             if abs(L_t[row][row]) <= eps:
@@ -255,7 +265,79 @@ def solve_L_x_equals_b_system(L, b):
                 X[row] = x / L_t[row][row]
         return X
 
-    return solve_Ly_equals_b(), solve_Lt_x_equals_y_star()
+    Y = solve_Ly_equals_b()
+    X = solve_Lt_x_equals_y_star(Y)
+    return X
+
+
+def compute_norm_for_LU_decomposition(A_init, b):
+    """
+    Function for computing the Euclidean norm ||A_init * x_cholesky - b||2 with the Python library
+    (used for checking rate of success for our computation).
+    For reference we will use epsilon = 10 ** (-9)
+
+    :return: euclidean norm value
+    """
+    X_chol = np.linalg.solve(A_init, b)     # computing x_cholesky
+    mul = np.dot(A_init, X_chol)            # A_init * X_cholesky
+    mul = np.subtract(mul, b)               # subtracting b
+    val = np.linalg.norm(mul)               # computing euclidean norm on new result
+    if val < pow(10, -9):
+        print("Norm ||A_init * x_cholesky - b||2 is " + val + ". Computation is correct with the error epsilon.")
+    else:
+        print("Norm ||A_init * x_cholesky - b||2 is " + val + ". Computation is faulty.")
+    print('\n')
+    return val
+
+
+def compute_norm_for_approximation_of_cholesky_inverse(A_cholesky):
+    """
+    Function for computing the approximation for the inverse of A_cholesky
+    ||A(-1, cholesky) - A(-1, bibl)||
+
+    :return: euclidean norm value
+    """
+    A_inverse_chol = get_inverse_by_hand(A_cholesky)         # inverse computed by us
+    A_inverse_python = np.linalg.inv(np.matrix(A_cholesky))  # inverse computed by python library
+    sub = np.subtract(A_inverse_chol - A_inverse_python)     # A(-1, cholesky) - A(-1, bibl)
+    return np.linalg.norm(sub)                               # computing norm on previously obtain result
+
+
+def main():
+    print("Input method:\na) Randomized\nb) From file\nc) From console\nInsert your choice (a, b or c): ", end='')
+    correct_input: bool = False
+    input_method = None
+    while not correct_input:
+        input_method = input()
+        if input_method in "abc":
+            correct_input = True
+    # print("Chosen method: " + input_method + '\n')
+    if input_method == 'a':
+        # if input data is chosen pseudo-randomly:
+
+        m = random.randint(5, 14)  # eps = 10 ** (-m), m in [5,13]
+        eps = 10 ** (-m)
+        n = random.randint(3, 201)  # matrix size in [3, 200]
+        M = generate_random_matrix(n)
+        M_init = get_A_init(M)
+        b = []
+        for index in range (0, n):
+            b[index] = random.uniform(1.0, 1000.0)
+
+    elif input_method == 'b':
+        # if input data is taken from file:
+        pass
+
+    else:
+        # if input data is given from console:
+        pass
+
+
+if __name__ == "__main__":
+    main()
+
+
+
 
 
 
