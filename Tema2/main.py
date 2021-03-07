@@ -99,7 +99,7 @@ def check_diagonal_is_positive(A) -> bool:
 
 def cholesky_decomposition(A):
     """
-    Function for computing the Cholesky decomposition of a matrix A (as explained online).
+    Function for computing the Cholesky decomposition of a matrix A.
 
     :param A: matrix for which we perform the Cholesky decomposition
     :return: L and transpose L (lower and upper triangular matrix)
@@ -120,46 +120,14 @@ def cholesky_decomposition(A):
             else:
                 for p in range(0, col):
                     s += L[row][p] * L[col][p]
-                if L[col][col] > 0:
+                if abs(L[col][col]) > eps:
                     L[col][col] = (A[row][col] - s) / L[col][col]
+                else:
+                    print("Division by 0")
+                    break
     if check_diagonal_is_positive(L) is True:
         return L, get_transpose(L)
     return "Error! Cholesky decomposition not possible."
-
-
-def cholesky(A):
-    """
-    Function for computing the Cholesky decomposition of a matrix A (as given in homework pdf).
-
-    :param A: matrix for which we perform the Cholensky decomposition
-    :return: A as
-    """
-    # L = scipy.linalg.cholesky(A, lower=True)     # lower triangular matrix in Cholensky decomposition for A:
-    # L_t = scipy.linalg.cholesky(A, lower=False)  # upper ~
-    # return L, L_t
-
-    possible = True
-    for p in range(0, n):
-        for row in range(p, n):
-            upper = 0
-            lower = 0
-            for col in range(0, p):
-                upper += A[p][col] * A[col][row]
-            A[p][row] -= upper
-            if row == p:
-                pass
-            else:
-                for col in range(0, p):
-                    lower = A[row][col] * A[col][p]
-                if abs(A[p][p] > eps):
-                    A[row][p] = (A[row][p] - lower) / A[p][p]
-                else:
-                    possible = False
-                    break
-    if possible is True and check_diagonal_is_positive(A):
-        return A
-    print("Division by 0!")
-    return possible
 
 
 """
@@ -177,8 +145,7 @@ def check_cholesky_is_correct(A) -> bool:
     :return: true if matrix multiplication is same as A_init, false otherwise
     """
     A_init = get_A_init(A)
-    L = cholesky(A)
-    L_t = get_transpose(L)
+    L, L_t = cholesky_decomposition(A)
     product = np.matmul(L, L_t)
     for row in range(0, n):
         for col in range(0, n):
@@ -212,8 +179,6 @@ def solve_Ly_equals_b(L, b):
 def solve_Lt_x_equals_y_star(L, Y):
     """
     Inverse substitution.
-    :param x:
-    :return:
     """
     L_t = get_transpose(L)
     X = np.zeros(n)
@@ -268,7 +233,7 @@ def get_inverse_by_lib(A):
     return np.linalg.inv(A)
 
 
-def compute_norm_for_LU_decomposition(A_init, b):
+def compute_norm_for_LLt_decomposition(A_init, b):
     """
     Function for computing the Euclidean norm ||A_init * x_cholesky - b||2 with the Python library
     (used for checking rate of success for our computation).
