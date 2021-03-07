@@ -75,28 +75,6 @@ def check_matrix_symmetry(A) -> bool:
     return True
 
 
-def get_inverse_by_hand(A):
-    """
-    Function that returns the inverse matrix of matrix A.
-
-    :param A: matrix A
-    :return: inverse of A
-    """
-    copy_A = np.copy(A)
-    for row in range(0, n):
-        return 1
-
-
-def get_inverse_by_lib(A):
-    """
-    Function that returns the inverse matrix of matrix A as computed by python's library.
-
-    :param A: matrix A
-    :return: inverse of A
-    """
-    return np.linalg.inv(A)
-
-
 def get_A_init(A):
     """
 
@@ -262,6 +240,33 @@ def solve_system(L, b):
     return X
 
 
+def get_inverse_by_hand(A, b):
+    """
+    Function that returns the inverse matrix of matrix A.
+    For computing column j=1..n of A_transposed, we will solve A * x = l(j):
+    l(1) = (1, 0, 0, ..., 0)
+    l(2) = (0, 1, 0, ..., 0)
+    ...
+    b = l(i)  =>  We will have to solve A * x == l(i)  <=>  1) L * y = b(i) and we find y
+                                                            2) l_t * x = y* and we find x
+    :param A: matrix A
+    :return: inverse of A
+    """
+    copy_A = np.copy(A)
+    for row in range(0, n):
+        return 1
+
+
+def get_inverse_by_lib(A):
+    """
+    Function that returns the inverse matrix of matrix A as computed by python's library.
+
+    :param A: matrix A
+    :return: inverse of A
+    """
+    return np.linalg.inv(A)
+
+
 def compute_norm_for_LU_decomposition(A_init, b):
     """
     Function for computing the Euclidean norm ||A_init * x_cholesky - b||2 with the Python library
@@ -331,3 +336,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
