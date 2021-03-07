@@ -85,14 +85,6 @@ def get_A_init(A):
     return A_initial
 
 
-# det(A) = det(L)det(Lt) = l11**2 * l22**2 * ... lnn**2
-def LUDet(A):
-    p = 1
-    for index in range(0, n):
-        p *= A[index][index] ** 2
-    return p
-
-
 def check_diagonal_is_positive(A) -> bool:
     """
     Boolean function determining whether a matrix A has exclusively positive elements on its main diagonal.
