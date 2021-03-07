@@ -1,7 +1,6 @@
 import math
 import random
 import scipy
-
 import numpy as np
 
 
@@ -22,13 +21,6 @@ def get_input_from_file():
                 A = np.asarray(M)
                 print(A[2, 2])
     return n, eps, A, b
-
-
-# n, eps, M, b = get_input_from_file()
-# print("n =", n)
-# print("eps =", eps)
-# print("M=", M)
-# print("b =", b)
 
 
 def generate_random_matrix(n):
@@ -321,12 +313,16 @@ def main():
         M = generate_random_matrix(n)
         M_init = get_A_init(M)
         b = []
-        for index in range (0, n):
+        for index in range(0, n):
             b[index] = random.uniform(1.0, 1000.0)
+        print("n =", n)
+        print("eps =", eps)
+        print("M=", M)
+        print("b =", b)
 
     elif input_method == 'b':
         # if input data is taken from file:
-        pass
+        n, eps, M, b = get_input_from_file()
 
     else:
         # if input data is given from console:
@@ -335,10 +331,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
