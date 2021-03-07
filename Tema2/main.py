@@ -195,55 +195,58 @@ def check_cholesky_is_correct(A) -> bool:
     return True
 
 
+def solve_Ly_equals_b():
+    """
+    Direct substitution.
+
+    :param b:
+    :return:
+    """
+    Y = []
+    possible = True
+    for row in range(0, n):
+        y = b[row]
+        for col in range(0, row):
+            y -= L[row][col] * Y[col]
+        if abs(L[row][row]) <= eps:
+            print("Error! Can't perform division.")
+            possible = False
+        else:
+            Y.append(y / L[row][row])
+    if possible is True:
+        return Y
+
+
+def solve_Lt_x_equals_y_star(Y):
+    """
+    Inverse substitution.
+    :param x:
+    :return:
+    """
+    L_t = get_transpose(L)
+    X = np.zeros(n)
+    for row in range(n-1, 0, -1):
+        x = Y[row]
+        for col in range(row + 1, n):
+            x -= X[col] * L_t[row][col]
+        if abs(L_t[row][row]) <= eps:
+            break
+        else:
+            X[row] = x / L_t[row][row]
+    return X
+
+
 def solve_system(L, b):
-    def solve_Ly_equals_b():
-        """
-        Direct substitution.
-
-        :param b:
-        :return:
-        """
-        Y = []
-        possible = True
-        for row in range(0, n):
-            y = b[row]
-            for col in range(0, row):
-                y -= L[row][col] * Y[col]
-            if abs(L[row][row]) <= eps:
-                print("Error! Can't perform division.")
-                possible = False
-            else:
-                Y.append(y / L[row][row])
-        if possible is True:
-            return Y
-
-    def solve_Lt_x_equals_y_star(Y):
-        """
-        Inverse substitution.
-        :param x:
-        :return:
-        """
-        L_t = get_transpose(L)
-        X = np.zeros(n)
-        for row in range(n-1, 0, -1):
-            x = Y[row]
-            for col in range(row + 1, n):
-                x -= X[col] * L_t[row][col]
-            if abs(L_t[row][row]) <= eps:
-                break
-            else:
-                X[row] = x / L_t[row][row]
-        return X
 
     Y = solve_Ly_equals_b()
     X = solve_Lt_x_equals_y_star(Y)
     return X
 
 
-def get_inverse_by_hand(A, b):
+def get_inverse_by_hand(A):
     """
     Function that returns the inverse matrix of matrix A.
-    For computing column j=1..n of A_transposed, we will solve A * x = l(j):
+    For computing column j = 1..n of A_transposed, we will solve A * x = l(j):
     l(1) = (1, 0, 0, ..., 0)
     l(2) = (0, 1, 0, ..., 0)
     ...
@@ -253,8 +256,17 @@ def get_inverse_by_hand(A, b):
     :return: inverse of A
     """
     copy_A = np.copy(A)
-    for row in range(0, n):
-        return 1
+    A_inverse = np.zeros(n, dtype=float)
+    for index in range(0, n):
+        # getting vector b as a vector with 0s and a 1 on the position 'index'
+        b = np.zeros(n)
+        b[index] = 1.0
+        # for each column in matrix A, we solve the system
+        # first: solving L * y = b:
+        
+    return 0
+
+
 
 
 def get_inverse_by_lib(A):
@@ -294,10 +306,10 @@ def compute_norm_for_approximation_of_cholesky_inverse(A_cholesky):
 
     :return: euclidean norm value
     """
-    A_inverse_chol = get_inverse_by_hand(A_cholesky)         # inverse computed by us
-    A_inverse_python = np.linalg.inv(np.matrix(A_cholesky))  # inverse computed by python library
-    sub = np.subtract(A_inverse_chol - A_inverse_python)     # A(-1, cholesky) - A(-1, bibl)
-    return np.linalg.norm(sub)                               # computing norm on previously obtain result
+    A_inverse_chol = get_inverse_by_hand(A_cholesky)            # inverse computed by us
+    A_inverse_python = np.linalg.inv(np.matrix(A_cholesky))     # inverse computed by python library
+    sub = np.subtract(A_inverse_chol, A_inverse_python)         # A(-1, cholesky) - A(-1, bibl)
+    return np.linalg.norm(sub)                                  # computing norm on previously obtain result
 
 
 def main():
@@ -336,4 +348,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
 
