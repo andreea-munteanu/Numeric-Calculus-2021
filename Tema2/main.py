@@ -195,11 +195,11 @@ def check_cholesky_is_correct(A) -> bool:
     return True
 
 
-def solve_Ly_equals_b():
+def solve_Ly_equals_b(L, b):
     """
     Direct substitution.
 
-    :param b:
+    :param b: initial vector b
     :return:
     """
     Y = []
@@ -217,7 +217,7 @@ def solve_Ly_equals_b():
         return Y
 
 
-def solve_Lt_x_equals_y_star(Y):
+def solve_Lt_x_equals_y_star(L, Y):
     """
     Inverse substitution.
     :param x:
@@ -237,9 +237,8 @@ def solve_Lt_x_equals_y_star(Y):
 
 
 def solve_system(L, b):
-
-    Y = solve_Ly_equals_b()
-    X = solve_Lt_x_equals_y_star(Y)
+    Y = solve_Ly_equals_b(L, b)
+    X = solve_Lt_x_equals_y_star(L, Y)
     return X
 
 
@@ -255,18 +254,16 @@ def get_inverse_by_hand(A):
     :param A: matrix A
     :return: inverse of A
     """
-    copy_A = np.copy(A)
     A_inverse = np.zeros(n, dtype=float)
     for index in range(0, n):
         # getting vector b as a vector with 0s and a 1 on the position 'index'
         b = np.zeros(n)
         b[index] = 1.0
         # for each column in matrix A, we solve the system
-        # first: solving L * y = b:
-        
-    return 0
-
-
+        col_i = solve_system(A, b)
+        for row in range(0, n):
+            A_inverse[row][index] = col_i[row]
+    return A_inverse
 
 
 def get_inverse_by_lib(A):
