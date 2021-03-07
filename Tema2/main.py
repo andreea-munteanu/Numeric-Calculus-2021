@@ -25,7 +25,7 @@ def get_input_from_file():
 
 def generate_random_matrix(n):
     """
-    Function for generating a matrix A with elements randomly chosen in (0, 10000).
+    Function for generating a symmetric matrix A with elements randomly chosen in (0, 10000).
 
     :param n: size of square matrix A
     :return: matrix A randomly generated
@@ -46,6 +46,8 @@ M = np.matrix([[1.0, 0.0, 3.0],
 b = [1.0, 2.0, 4.0]
 d = np.diag(M)  # vector of matrix main diagonal
 
+print("M is:\n", M, '\n')
+
 
 def get_transpose(A):
     """
@@ -54,11 +56,11 @@ def get_transpose(A):
     :param A: matrix A
     :return: transpose of A
     """
-    A_T = np.zeros(n)
-    for row in range(0, n):
-        for col in range(0, n):
-            A_T[row][col] = A[col][row]
-    return A_T
+    return A.transpose()
+
+
+M_T = get_transpose(M)
+print("Transpose of M: \n", M_T)
 
 
 def check_matrix_symmetry(A) -> bool:
@@ -68,11 +70,17 @@ def check_matrix_symmetry(A) -> bool:
     :param A: matrix A
     :return: boolean value (true if At = A, false otherwise)
     """
-    for row in range(0, n):
-        for col in range(row, n):
-            if A[row][col] != A[col][row]:
-                return False
-    return True
+    # symmetric = True
+    # for row in range(0, n):
+    #     for col in range(row, n):
+    #         if A[row][col] != A[col][row]:
+    #             symmetric = False
+    #             break
+    # return symmetric
+    return (A == get_transpose(A)).all()
+
+
+print("\nIs our matrix symmetric?", "Yes." if check_matrix_symmetry(M) else "No.")
 
 
 def get_A_init(A):
@@ -88,13 +96,14 @@ def get_A_init(A):
 def check_diagonal_is_positive(A) -> bool:
     """
     Boolean function determining whether a matrix A has exclusively positive elements on its main diagonal.
+
     :param A: matrix A
     :return: true if l(i,i) > 0 for all i, false otherwise
     """
-    for index in range(0, n):
-        if A[index][index] <= 0:
-            return False
-    return True
+    return (A >= 0.0).all()
+
+
+print("\nIs our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(M) else "No.")
 
 
 def cholesky_decomposition(A):
@@ -125,10 +134,43 @@ def cholesky_decomposition(A):
                 else:
                     print("Division by 0")
                     break
-    if check_diagonal_is_positive(L) is True:
-        return L, get_transpose(L)
-    return "Error! Cholesky decomposition not possible."
 
+    if check_diagonal_is_positive(L) is True:
+        # return lower and upper triangular matrix:
+        return L, get_transpose(L)
+    print("Error! Cholesky decomposition not possible.")
+
+
+L, L_t = cholesky_decomposition(M)
+print("Cholesky decomposition: \n", L, '\n', L_t, '\n')
+
+
+def get_diagonal(matrix):
+    """
+
+    :param matrix:
+    :return: array containing elements on main diagonal of matrix A
+    """
+    return matrix.diagonal()
+
+
+def compute_det_A(L, L_t):
+    """
+    Function for computing det(A) = det(L) * det(L_t) = (l11 * l22 * .. * lnn) * (l11 * l22 * .. * lnn)
+
+    :param L: lower triangular matrix
+    :param L_t: upper triangular matrix
+    :return: det(A)
+    """
+    diag_L = get_diagonal(L)
+    diag_L_t = get_diagonal(L_t)
+    det_A = 1
+    for index in range(0, n):
+        det_A = det_A * diag_L[index] * diag_L_t[index]
+    return det_A
+
+
+print("\ndet(M) = ", compute_det_A(L, L_t))
 
 """
 L * y   = b  --> first
@@ -263,7 +305,7 @@ def compute_norm_for_approximation_of_cholesky_inverse(A_cholesky):
     A_inverse_chol = get_inverse_by_hand(A_cholesky)            # inverse computed by us
     A_inverse_python = np.linalg.inv(np.matrix(A_cholesky))     # inverse computed by python library
     sub = np.subtract(A_inverse_chol, A_inverse_python)         # A(-1, cholesky) - A(-1, bibl)
-    return np.linalg.norm(sub)                                  # computing norm on previously obtain result
+    return np.linalg.norm(sub)                                  # computing norm on previously obtain results
 
 
 def main():
@@ -278,11 +320,11 @@ def main():
     if input_method == 'a':
         # if input data is chosen pseudo-randomly:
 
-        m = random.randint(5, 14)  # eps = 10 ** (-m), m in [5,13]
+        m = random.randint(5, 14)        # eps = 10 ** (-m), m in [5,13]
         eps = 10 ** (-m)
-        n = random.randint(3, 201)  # matrix size in [3, 200]
-        M = generate_random_matrix(n)
-        M_init = get_A_init(M)
+        n = random.randint(3, 201)       # matrix size in [3, 200]
+        M = generate_random_matrix(n)    # symmetrical already, no need to further check
+        M_init = get_A_init(M)           # A_init
         b = []
         for index in range(0, n):
             b[index] = random.uniform(1.0, 1000.0)
@@ -300,8 +342,8 @@ def main():
         pass
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
 
 
 
