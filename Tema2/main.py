@@ -322,7 +322,8 @@ def compute_norm_for_LLt_decomposition(A_init, b):
 
     :return: euclidean norm value
     """
-    X_chol = np.linalg.solve(A_init, b)     # computing x_cholesky
+    X_chol = solve_system(A_init, b)
+    # X_chol = np.linalg.solve(A_init, b)     # computing x_cholesky
     mul = np.dot(A_init, X_chol)            # A_init * X_cholesky
     mul = np.subtract(mul, b)               # subtracting b
     val = np.linalg.norm(mul)               # computing euclidean norm on new result
@@ -332,7 +333,10 @@ def compute_norm_for_LLt_decomposition(A_init, b):
         print("\nNorm ||A_init * x_cholesky - b|| is ",  val,  ". \nComputation is faulty.")
 
 
-compute_norm_for_LLt_decomposition(M, b)
+compute_norm_for_LLt_decomposition(M_init, b)
+
+
+print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
 
 
 def compute_norm_for_approximation_of_cholesky_inverse(A_cholesky):
@@ -373,14 +377,39 @@ def main():
             b[index] = random.uniform(1.0, 1000.0)
         print("n =", n)
         print("eps =", eps)
-        print("M=", M)
+        print("M =", M)
         print("b =", b)
+
+        M_T = get_transpose(M)
+        print("Transpose of M is: \n", M_T)
+        print("\nIs our matrix symmetric?", "Yes." if check_matrix_symmetry(M) else "No.")
+        print("\nIs our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(M) else "No.")
+        L, L_t = library_cholesky_decomposition(M)
+        print("\nCholesky decomposition (numpy): \n", L, '\n\n', L_t, '\n')
+        print("\ndet(M) = ", compute_det_A(L, L_t))
+        print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M) else "No.")
+        print("\nX_cholesky is: ", solve_system(M, b))
+        print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
+        compute_norm_for_LLt_decomposition(M_init, b)
 
     elif input_method == 'b':
         # if input data is taken from file:
         n = 3
         m = 8
         eps = 10 ** (-m)
+        M, b = get_input_from_file(n)
+        M_init = np.copy(M)
+        M_T = get_transpose(M)
+        print("Transpose of M is: \n", M_T)
+        print("\nIs our matrix symmetric?", "Yes." if check_matrix_symmetry(M) else "No.")
+        print("\nIs our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(M) else "No.")
+        L, L_t = library_cholesky_decomposition(M)
+        print("\nCholesky decomposition (numpy): \n", L, '\n\n', L_t, '\n')
+        print("\ndet(M) = ", compute_det_A(L, L_t))
+        print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M) else "No.")
+        print("\nX_cholesky is: ", solve_system(M, b))
+        print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
+        compute_norm_for_LLt_decomposition(M_init, b)
 
     else:
         # if input data is given from console:
