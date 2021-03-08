@@ -5,23 +5,27 @@ from scipy import linalg
 import numpy as np
 
 
-def get_input_from_file():
+def get_input_from_file(n):
     """
     Function for reading input from input file text.
     :return:
     """
-    n, eps, M, b = None, None, [], []
+    A = []
+    b = []
     with open('in.txt', 'r') as file:
         for i, line in enumerate(file):
-            if i == 0:  # 1st line: n
-                n = line
-            elif i == 1:  # 2nd line: eps
-                eps = line
-            else:
+            M = []
+            if i < n:
                 M.append([float(x) for x in line.split(' ')])
-                A = np.asarray(M)
-                print(A[2, 2])
-    return n, eps, A, b
+                A.append(M)
+            else:
+                b.append([float(x) for x in line.split(' ')])
+    return A, b
+
+
+# A, b = get_input_from_file(3)
+# print(A)
+# print("b=", b)
 
 
 def generate_random_matrix(n):
@@ -47,7 +51,8 @@ M = np.matrix([[1.0, 0.0, 3.0],
 b = [1.0, 2.0, 4.0]
 d = np.diag(M)  # vector of matrix main diagonal
 
-print("M is:\n", M, '\n')
+print("\nM is:\n", M, '\n')
+M_init = np.copy(M)
 
 
 def get_transpose(A):
@@ -61,7 +66,7 @@ def get_transpose(A):
 
 
 M_T = get_transpose(M)
-print("Transpose of M: \n", M_T)
+print("Transpose of M is: \n", M_T)
 
 
 def check_matrix_symmetry(A) -> bool:
@@ -132,7 +137,12 @@ def cholesky_decomposition(A):
     """
 
     # lower triangular matrix in Cholesky decomposition for A:
-    L = np.zeros([n, n])
+    L = np.copy(A)
+    # first element of matrix:
+    L[0, 0] = A[0, 0]
+    # # first col of matrix:
+    # for row in range(1, n):
+    #     L[row, 0] = A[0, row] / L[0, 0]
     for row in range(0, n):
         for col in range(0, row + 1):
             s = 0
@@ -145,6 +155,7 @@ def cholesky_decomposition(A):
                     s += L[row, p] * L[col, p]
                 if abs(L[col, col]) > eps:
                     L[col, col] = (A[row, col] - s) / L[col, col]
+                    print(L[col, col])
                 else:
                     print("Division by 0")
                     break
@@ -152,7 +163,7 @@ def cholesky_decomposition(A):
     if check_diagonal_is_positive(L) is True:
         # return lower and upper triangular matrix:
         return L, get_transpose(L)
-    print("Error! Cholesky decomposition not possible.")
+    # print("\tError! Cholesky decomposition not possible.")
     return None, None
 
 
@@ -196,16 +207,16 @@ def check_cholesky_is_correct(A) -> bool:
     :return: true if matrix multiplication is same as A_init, false otherwise
     """
     A_init = get_A_init(A)
-    L, L_t = cholesky_decomposition(A)  # library_cholesky_decomposition(A) 
+    L, L_t = library_cholesky_decomposition(A)  # cholesky_decomposition(A)
     product = np.matmul(L, L_t)
     for row in range(0, n):
         for col in range(0, n):
-            if product[row][col] != A_init[row][col]:
+            if product[row, col] != A_init[row, col]:
                 return False
     return True
 
 
-print("\nIs our Cholesky decomposition correct? ", "Yes" if check_cholesky_is_correct(M) else "No")
+print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M) else "No.")
 
 
 """
@@ -214,9 +225,9 @@ L_t * x = y  --> second
 """
 
 
-def solve_Ly_equals_b(L, b):
+def solve_Ly_equals_b(L, b): # checked; works
     """
-    Direct substitution.
+    Solve L * y = b  =>  find y*
 
     :param b: initial vector b
     :return:
@@ -226,23 +237,23 @@ def solve_Ly_equals_b(L, b):
     for row in range(0, n):
         y = b[row]
         for col in range(0, row):
-            y -= L[row][col] * Y[col]
-        if abs(L[row][row]) <= eps:
+            y -= L[row, col] * Y[col]
+        if abs(L[row, row]) < eps:
             print("Error! Can't perform division.")
             possible = False
-        else:
-            Y.append(y / L[row][row])
+        else:  # if abs(L[row, row]) > eps: can perform division
+            Y.append(y / L[row, row])
     if possible is True:
         return Y
 
 
-def solve_Lt_x_equals_y_star(L, Y):
+def solve_Lt_x_equals_y_star(L, Y): # checked; works
     """
-    Inverse substitution.
+    Solve L_t * x = Y
     """
     L_t = get_transpose(L)
     X = np.zeros(n)
-    for row in range(n-1, 0, -1):
+    for row in range(0, n):
         x = Y[row]
         for col in range(row + 1, n):
             x -= X[col] * L_t[row][col]
@@ -253,10 +264,14 @@ def solve_Lt_x_equals_y_star(L, Y):
     return X
 
 
-def solve_system(L, b):
+def solve_system(A, b):
+    L, L_t = library_cholesky_decomposition(A)  # cholesky_decomposition(A)
     Y = solve_Ly_equals_b(L, b)
-    X = solve_Lt_x_equals_y_star(L, Y)
+    X = solve_Lt_x_equals_y_star(L_t, Y)
     return X
+
+
+print("\nX_cholesky is: ", solve_system(M, b))
 
 
 def get_inverse_by_hand(A):
@@ -271,16 +286,19 @@ def get_inverse_by_hand(A):
     :param A: matrix A
     :return: inverse of A
     """
-    A_inverse = np.zeros(n, dtype=float)
+    A_inverse = np.zeros([n, n], dtype=float)
     for index in range(0, n):
         # getting vector b as a vector with 0s and a 1 on the position 'index'
         b = np.zeros(n)
         b[index] = 1.0
-        # for each column in matrix A, we solve the system
+        # for each column in matrix A, we solve the system and the solution X will be col_i of A_inverse
         col_i = solve_system(A, b)
         for row in range(0, n):
-            A_inverse[row][index] = col_i[row]
+            A_inverse[row, index] = col_i[row]
     return A_inverse
+
+
+print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
 
 
 def get_inverse_by_lib(A):
@@ -291,6 +309,9 @@ def get_inverse_by_lib(A):
     :return: inverse of A
     """
     return np.linalg.inv(A)
+
+
+# print("\n Matrix M's inverse matrix (numpy): \n", get_inverse_by_lib(M))
 
 
 def compute_norm_for_LLt_decomposition(A_init, b):
@@ -306,11 +327,12 @@ def compute_norm_for_LLt_decomposition(A_init, b):
     mul = np.subtract(mul, b)               # subtracting b
     val = np.linalg.norm(mul)               # computing euclidean norm on new result
     if val < pow(10, -9):
-        print("Norm ||A_init * x_cholesky - b||2 is " + val + ". Computation is correct with the error epsilon.")
+        print("\nNorm ||A_init * x_cholesky - b|| is ", val, ". \nComputation is correct with the error epsilon.")
     else:
-        print("Norm ||A_init * x_cholesky - b||2 is " + val + ". Computation is faulty.")
-    print('\n')
-    return val
+        print("\nNorm ||A_init * x_cholesky - b|| is ",  val,  ". \nComputation is faulty.")
+
+
+compute_norm_for_LLt_decomposition(M, b)
 
 
 def compute_norm_for_approximation_of_cholesky_inverse(A_cholesky):
@@ -324,6 +346,9 @@ def compute_norm_for_approximation_of_cholesky_inverse(A_cholesky):
     A_inverse_python = np.linalg.inv(np.matrix(A_cholesky))     # inverse computed by python library
     sub = np.subtract(A_inverse_chol, A_inverse_python)         # A(-1, cholesky) - A(-1, bibl)
     return np.linalg.norm(sub)                                  # computing norm on previously obtain results
+
+
+print("\nNorm ||A(-1, cholesky) - A(-1, bibl)||: ", compute_norm_for_approximation_of_cholesky_inverse(M))
 
 
 def main():
@@ -353,19 +378,19 @@ def main():
 
     elif input_method == 'b':
         # if input data is taken from file:
-        n, eps, M, b = get_input_from_file()
+        n = 3
+        m = 8
+        eps = 10 ** (-m)
 
     else:
         # if input data is given from console:
-        pass
-
-
-# if __name__ == "__main__":
-#     main()
-
-
-
-
-
-
+        print("n = ", end='')
+        n = input()
+        print("m = ", end='')
+        m = input()
+        b = []
+        bv = str(input("b = "))
+        bv.split(" ")
+        for i in b:
+            b.append(float(i))
 
