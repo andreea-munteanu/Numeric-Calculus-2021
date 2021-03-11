@@ -90,7 +90,18 @@ def check_matrix_symmetry(A) -> bool:
     return (A == get_transpose(A)).all()
 
 
+def check_positive_definite(A) -> bool:
+    """
+    Boolean function for determining whether matrix A is positive definite.
+
+    :param A: matrix A
+    :return: true if yes, false otherwise
+    """
+    return (np.linalg.eigvals(A) > 0).all()
+
+
 print("\nIs our matrix symmetric (A = A_T) ?", "Yes." if check_matrix_symmetry(M) else "No.")
+print("\nIs our matrix positive definite?", "Yes." if check_positive_definite(M) else "No.")
 
 
 def get_A_init(A):
@@ -135,44 +146,33 @@ L, L_t = library_cholesky_decomposition(M)
 print("\nCholesky decomposition (numpy): \n", L, '\n\n', L_t, '\n')
 
 
-def cholesky_decomposition(A):
+def cholesky_decomp(M):
     """
     Function for computing the Cholesky decomposition of a matrix A.
 
     :param A: matrix for which we perform the Cholesky decomposition
-    :return: L and transpose L (lower and upper triangular matrix)
+    :return: A as cholesky decomposition (lower and upper triangular matrix)
     """
+    A = np.squeeze(np.asarray(M))
+    # computing the lower triangular matrix dirrectly on matrix A:
+    for i in range(0, n):
+        if abs(A[i, i]) > eps:
+            # computing elements on diagonal l(p,p):
+            A[i, i] = math.sqrt(A[i, i] - np.dot(A[i, 0:i], A[i, 0:i], out=None))
+            for j in range(i + 1, n):
+                # l(i,p):
+                A[j, i] = (A[j, i] - np.dot(A[j, 0:i], A[i, 0:i], out=None)) / A[i, i]
+        else:
+            print("Error! Division by 0, Cholesky decomposition not possible.")
+    # populating matrix with 0
+    for i in range(1, n):
+        A[0:i, i] = 0.0
+    M = np.asmatrix(A)
+    return M
 
-    # lower triangular matrix in Cholesky decomposition for A:
-    L = np.copy(A)
-    # first element of matrix:
-    L[0, 0] = A[0, 0]
-    # # first col of matrix:
-    # for row in range(1, n):
-    #     L[row, 0] = A[0, row] / L[0, 0]
-    for row in range(0, n):
-        for col in range(0, row + 1):
-            s = 0
-            if row == col:  # main diagonal
-                for p in range(1, col):
-                    s += L[row, p] ** 2
-                L[col, col] = abs(math.sqrt(A[col, col] - s))
-            else:
-                for p in range(0, col):
-                    s += L[row, p] * L[col, p]
-                if abs(L[col, col]) > eps:
-                    L[col, col] = (A[row, col] - s) / L[col, col]
-                    print(L[col, col])
-                else:
-                    print("Division by 0")
-                    break
 
-    if check_diagonal_is_positive(L) is True:
-        # return lower and upper triangular matrix:
-        return L, get_transpose(L)
-    print("\tError! Cholesky decomposition not possible.")
-    return (np.zeros([n, n]), np.zeros([n, n]))
-
+M = cholesky_decomp(M)
+print("Our Cholesky decomposition (L, L_t): \n", M, "\n\n", get_transpose(M))
 
 # L, L_t = cholesky_decomposition(M)
 # print("\nCholesky decomposition: \n", L, '\n\n', L_t, '\n')
