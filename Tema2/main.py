@@ -87,6 +87,7 @@ def check_matrix_symmetry(A) -> bool:
     #             symmetric = False
     #             break
     # return symmetric
+
     return (A == get_transpose(A)).all()
 
 
@@ -101,7 +102,7 @@ def check_positive_definite(A) -> bool:
 
 
 print("\nIs our matrix symmetric (A = A_T) ?", "Yes." if check_matrix_symmetry(M) else "No.")
-print("\nIs our matrix positive definite?", "Yes." if check_positive_definite(M) else "No.")
+print("Is our matrix positive definite?", "Yes." if check_positive_definite(M) else "No.")
 
 
 def get_A_init(A):
@@ -112,6 +113,9 @@ def get_A_init(A):
     """
     A_initial = np.copy(A)
     return A_initial
+
+
+M_init = get_A_init(M)
 
 
 def check_diagonal_is_positive(d) -> bool:
@@ -127,7 +131,7 @@ def check_diagonal_is_positive(d) -> bool:
     return True
 
 
-print("\nIs our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(d) else "No.")
+print("Is our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(d) else "No.")
 
 
 def library_cholesky_decomposition(A):
@@ -143,7 +147,7 @@ def library_cholesky_decomposition(A):
 
 
 L, L_t = library_cholesky_decomposition(M)
-print("\nCholesky decomposition (numpy): \n", L, '\n\n', L_t, '\n')
+print("\nCholesky decomposition (using numpy): \n", L, '\n\n', L_t, '\n')
 
 
 def cholesky_decomp(M):
@@ -172,10 +176,7 @@ def cholesky_decomp(M):
 
 
 M = cholesky_decomp(M)
-print("Our Cholesky decomposition (L, L_t): \n", M, "\n\n", get_transpose(M))
-
-# L, L_t = cholesky_decomposition(M)
-# print("\nCholesky decomposition: \n", L, '\n\n', L_t, '\n')
+print("\nOur Cholesky decomposition (L, L_t): \n", M, "\n\n", get_transpose(M))
 
 
 def compute_det_A(L, L_t):
@@ -194,7 +195,66 @@ def compute_det_A(L, L_t):
     return det_A
 
 
-print("\ndet(M) = ", compute_det_A(L, L_t))
+print("\ndet(M) = det(L) * det(L_t) =", compute_det_A(M, get_transpose(M)))
+
+
+"""
+L * y   = b  --> first
+L_t * x = y  --> second
+"""
+
+
+def solve_Ly_equals_b(A, b):
+    """
+    Solve L * y = b  =>  find y*
+
+    :param b: initial vector b
+    :return:
+    """
+    Y = []
+    L = np.squeeze(np.asarray(A))
+    possible = True
+    for row in range(0, n):
+        y = b[row]
+        for col in range(0, row):
+            y -= np.dot(L[row, col], Y[col])
+        if abs(L[row, row]) < eps:
+            print("Error! Can't perform division.")
+            possible = False
+        else:  # if abs(L[row, row]) > eps: can perform division
+            Y.append(y / L[row, row])
+    if possible is True:
+        return Y
+
+
+def solve_Lt_x_equals_y_star(L, Y):
+    """
+    Solve L_t * x = Y
+    """
+    L_t = get_transpose(L)
+    X = np.zeros(n)
+    for row in range(0, n):
+        x = Y[row]
+        for col in range(row + 1, n):
+            x -= np.dot(X[col], L_t[row, col])
+        if abs(L_t[row, row]) <= eps:
+            break
+        else:
+            X[row] = x / L_t[row, row]
+    return X
+
+
+def solve_system(A, b):
+    Y = solve_Ly_equals_b(A, b)
+    # print("Y=", Y)
+    X = solve_Lt_x_equals_y_star(get_transpose(A), Y)
+    # print("X=", X)
+    return X
+
+
+X_chol = solve_system(M, b)
+# M is now the lower triangular matrix of M_init
+print("\nX_cholesky is: ", X_chol)
 
 
 def check_cholesky_is_correct(A, x_chol, b) -> bool:
@@ -207,70 +267,12 @@ def check_cholesky_is_correct(A, x_chol, b) -> bool:
     """
     product = np.matmul(A, x_chol)
     res = product.flatten()
-    return (res == b).all()
+    return bool((res == b).all())
+
+# print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M_init, ) else "No.")
 
 
-# print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M) else "No.")
-
-
-"""
-L * y   = b  --> first
-L_t * x = y  --> second
-"""
-
-
-def solve_Ly_equals_b(L, b): # checked; works
-    """
-    Solve L * y = b  =>  find y*
-
-    :param b: initial vector b
-    :return:
-    """
-    Y = []
-    possible = True
-    for row in range(0, n):
-        y = b[row]
-        for col in range(0, row):
-            y -= L[row, col] * Y[col]
-        if abs(L[row, row]) < eps:
-            print("Error! Can't perform division.")
-            possible = False
-        else:  # if abs(L[row, row]) > eps: can perform division
-            Y.append(y / L[row, row])
-    if possible is True:
-        return Y
-
-
-def solve_Lt_x_equals_y_star(L, Y): # checked; works
-    """
-    Solve L_t * x = Y
-    """
-    L_t = get_transpose(L)
-    X = np.zeros(n)
-    for row in range(0, n):
-        x = Y[row]
-        for col in range(row + 1, n):
-            x -= X[col] * L_t[row][col]
-        if abs(L_t[row][row]) <= eps:
-            break
-        else:
-            X[row] = x / L_t[row][row]
-    return X
-
-
-def solve_system(A, b):
-    L, L_t = library_cholesky_decomposition(A)  # cholesky_decomposition(A)
-    Y = solve_Ly_equals_b(L, b)
-    # print("Y=", Y)
-    X = solve_Lt_x_equals_y_star(L_t, Y)
-    # print("X=", X)
-    return X
-
-
-print("\nX_cholesky is: ", solve_system(M, b))
-
-
-print("Is Cholesky correct? ", "Yes" if check_cholesky_is_correct(M, solve_system(M, b), b) else "No")
+print("Is Cholesky correct? ", "Yes" if check_cholesky_is_correct(M_init, X_chol, b) else "No")
 
 
 def get_inverse_by_hand(A):
