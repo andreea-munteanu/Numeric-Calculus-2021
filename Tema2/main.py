@@ -69,10 +69,6 @@ def get_transpose(A):
     return A.transpose()
 
 
-M_T = get_transpose(M)
-print("\nTranspose of M is: \n", M_T)
-
-
 def check_matrix_symmetry(A) -> bool:
     """
     Boolean function determining whether a matrix A is symmetric (i.e., A is equal to its transpose).
@@ -146,8 +142,8 @@ def library_cholesky_decomposition(A):
     return L, L_t
 
 
-L, L_t = library_cholesky_decomposition(M)
-print("\nCholesky decomposition (using numpy): \n", L, '\n\n', L_t, '\n')
+# L, L_t = library_cholesky_decomposition(M)
+# print("\nCholesky decomposition (using numpy): \n", L, '\n\n', L_t, '\n')
 
 
 def cholesky_decomp(M):
@@ -177,6 +173,7 @@ def cholesky_decomp(M):
 
 M = cholesky_decomp(M)
 print("\nOur Cholesky decomposition (L, L_t): \n", M, "\n\n", get_transpose(M))
+
 
 
 def compute_det_A(L, L_t):
@@ -227,34 +224,43 @@ def solve_Ly_equals_b(A, b):
         return Y
 
 
-def solve_Lt_x_equals_y_star(L, Y):
+def solve_Lt_x_equals_y_star(L, Y):  # works; checked
     """
-    Solve L_t * x = Y
+    Solve L_t * x = Y -> find x
     """
-    L_t = get_transpose(L)
+    L_t = get_transpose(L)  # upper triangular matrix
+    # print(L_t)
     X = np.zeros(n)
     for row in range(0, n):
-        x = Y[row]
-        for col in range(row + 1, n):
-            x -= np.dot(X[col], L_t[row, col])
+        x = Y
+        # print("Y[row] =", Y[row])
+        for col in range(0, row):
+            x -= np.dot(L_t[row, col], X[col])
         if abs(L_t[row, row]) <= eps:
             break
         else:
-            X[row] = x / L_t[row, row]
+            X[row] = x[row] / L_t[row, row]
     return X
 
 
 def solve_system(A, b):
+    # A will be
+    print("\nb =", b)
     Y = solve_Ly_equals_b(A, b)
-    # print("Y=", Y)
-    X = solve_Lt_x_equals_y_star(get_transpose(A), Y)
-    # print("X=", X)
+    print("Y =", Y)
+    X = solve_Lt_x_equals_y_star(A, Y)  # function works with A_t
+    print("X =", X)
     return X
 
 
-X_chol = solve_system(M, b)
+print("\nM-init is now: \n", M_init)  # M_init
+print("M is now: \n", M)            # lower triangular matrix
+
+M_init2 = M_init
+
+X_cholesky = solve_system(cholesky_decomp(M_init), b)
 # M is now the lower triangular matrix of M_init
-print("\nX_cholesky is: ", X_chol)
+print("\nX_cholesky is: ", X_cholesky)
 
 
 def check_cholesky_is_correct(A, x_chol, b) -> bool:
@@ -272,7 +278,7 @@ def check_cholesky_is_correct(A, x_chol, b) -> bool:
 # print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M_init, ) else "No.")
 
 
-print("Is Cholesky correct? ", "Yes" if check_cholesky_is_correct(M_init, X_chol, b) else "No")
+print("Is Cholesky correct? ", "Yes" if check_cholesky_is_correct(M_init2, X_cholesky, b) else "No")
 
 
 def get_inverse_by_hand(A):
@@ -299,7 +305,7 @@ def get_inverse_by_hand(A):
     return A_inverse
 
 
-print("\n Matrix M's inverse matrix (ours): \n", get_inverse_by_hand(M))
+print("\n Matrix M's inverse matrix (ours): \n", get_inverse_by_hand(M_init))
 
 
 def get_inverse_by_lib(A):
@@ -312,7 +318,7 @@ def get_inverse_by_lib(A):
     return np.linalg.inv(A)
 
 
-print("\n Matrix M's inverse matrix (numpy): \n", get_inverse_by_lib(M))
+print("\n Matrix M's inverse matrix (numpy): \n", get_inverse_by_lib(M_init))
 
 
 def compute_norm_for_LLt_decomposition(A_init, b):
