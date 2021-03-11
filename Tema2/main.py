@@ -28,18 +28,22 @@ def get_input_from_file(n):
 # print("b=", b)
 
 
-def generate_random_matrix(n):
+def generate_random_matrix(n): # checked; works
     """
     Function for generating a symmetric matrix A with elements randomly chosen in (0, 10000).
 
     :param n: size of square matrix A
     :return: matrix A randomly generated
     """
-    A = np.zeros(n)
-    for row in range(0, n):
-        for col in range(row, n):
-            A[row][col] = A[col][row] = random.uniform(0, 10001)
-    return A
+    return np.random.random((n, n))
+
+
+def get_diagonal(matrix):
+    """
+    :param matrix:
+    :return: array containing elements on main diagonal of matrix A
+    """
+    return np.diagonal(matrix)
 
 
 m = 8
@@ -49,10 +53,10 @@ M = np.matrix([[1.0, 0.0, 3.0],
                [0.0, 4.0, 2.0],
                [3.0, 2.0, 11.0]])
 b = [1.0, 2.0, 4.0]
-d = np.diag(M)  # vector of matrix main diagonal
+d = get_diagonal(M)  # vector of matrix main diagonal
 
-print("\nM is:\n", M, '\n')
-M_init = np.copy(M)
+print("\nM is:\n", M)
+print("\nd =", d)
 
 
 def get_transpose(A):
@@ -66,7 +70,7 @@ def get_transpose(A):
 
 
 M_T = get_transpose(M)
-print("Transpose of M is: \n", M_T)
+print("\nTranspose of M is: \n", M_T)
 
 
 def check_matrix_symmetry(A) -> bool:
@@ -86,7 +90,7 @@ def check_matrix_symmetry(A) -> bool:
     return (A == get_transpose(A)).all()
 
 
-print("\nIs our matrix symmetric?", "Yes." if check_matrix_symmetry(M) else "No.")
+print("\nIs our matrix symmetric (A = A_T) ?", "Yes." if check_matrix_symmetry(M) else "No.")
 
 
 def get_A_init(A):
@@ -99,17 +103,20 @@ def get_A_init(A):
     return A_initial
 
 
-def check_diagonal_is_positive(A) -> bool:
+def check_diagonal_is_positive(d) -> bool:
     """
     Boolean function determining whether a matrix A has exclusively positive elements on its main diagonal.
 
-    :param A: matrix A
+    :param d: diagonal of matrix
     :return: true if l(i,i) > 0 for all i, false otherwise
     """
-    return (A >= 0.0).all()
+    for elem in d:
+        if elem == 0:
+            return False
+    return True
 
 
-print("\nIs our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(M) else "No.")
+print("\nIs our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(d) else "No.")
 
 
 def library_cholesky_decomposition(A):
@@ -147,9 +154,9 @@ def cholesky_decomposition(A):
         for col in range(0, row + 1):
             s = 0
             if row == col:  # main diagonal
-                for p in range(0, col):
+                for p in range(1, col):
                     s += L[row, p] ** 2
-                L[col, col] = math.sqrt(A[col, col] - s)
+                L[col, col] = abs(math.sqrt(A[col, col] - s))
             else:
                 for p in range(0, col):
                     s += L[row, p] * L[col, p]
@@ -163,20 +170,12 @@ def cholesky_decomposition(A):
     if check_diagonal_is_positive(L) is True:
         # return lower and upper triangular matrix:
         return L, get_transpose(L)
-    # print("\tError! Cholesky decomposition not possible.")
-    return None, None
+    print("\tError! Cholesky decomposition not possible.")
+    return (np.zeros([n, n]), np.zeros([n, n]))
 
 
 # L, L_t = cholesky_decomposition(M)
 # print("\nCholesky decomposition: \n", L, '\n\n', L_t, '\n')
-
-
-def get_diagonal(matrix):
-    """
-    :param matrix:
-    :return: array containing elements on main diagonal of matrix A
-    """
-    return matrix.diagonal()
 
 
 def compute_det_A(L, L_t):
@@ -198,25 +197,20 @@ def compute_det_A(L, L_t):
 print("\ndet(M) = ", compute_det_A(L, L_t))
 
 
-def check_cholesky_is_correct(A) -> bool:
+def check_cholesky_is_correct(A, x_chol, b) -> bool:
     """
     Boolean function for checking whether our Cholesky decomposition is correct.
-    A correct Cholesky decomposition of A = L * L_t will hold that L * L_t = A_init.
+    A correct Cholesky decomposition of A = L * L_t will hold that A_init * A_Chol = b
 
     :param A: matrix A
-    :return: true if matrix multiplication is same as A_init, false otherwise
+    :return: true if matrix multiplication is same as b, false otherwise
     """
-    A_init = get_A_init(A)
-    L, L_t = library_cholesky_decomposition(A)  # cholesky_decomposition(A)
-    product = np.matmul(L, L_t)
-    for row in range(0, n):
-        for col in range(0, n):
-            if product[row, col] != A_init[row, col]:
-                return False
-    return True
+    product = np.matmul(A, x_chol)
+    res = product.flatten()
+    return (res == b).all()
 
 
-print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M) else "No.")
+# print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M) else "No.")
 
 
 """
@@ -267,11 +261,16 @@ def solve_Lt_x_equals_y_star(L, Y): # checked; works
 def solve_system(A, b):
     L, L_t = library_cholesky_decomposition(A)  # cholesky_decomposition(A)
     Y = solve_Ly_equals_b(L, b)
+    # print("Y=", Y)
     X = solve_Lt_x_equals_y_star(L_t, Y)
+    # print("X=", X)
     return X
 
 
 print("\nX_cholesky is: ", solve_system(M, b))
+
+
+print("Is Cholesky correct? ", "Yes" if check_cholesky_is_correct(M, solve_system(M, b), b) else "No")
 
 
 def get_inverse_by_hand(A):
@@ -287,23 +286,23 @@ def get_inverse_by_hand(A):
     :return: inverse of A
     """
     A_inverse = np.zeros([n, n], dtype=float)
-    for index in range(0, n):
+    for index in range(0, n):  # column
         # getting vector b as a vector with 0s and a 1 on the position 'index'
         b = np.zeros(n)
         b[index] = 1.0
         # for each column in matrix A, we solve the system and the solution X will be col_i of A_inverse
-        col_i = solve_system(A, b)
+        col_i = solve_system(A, b)  # equivalent to X_chol
         for row in range(0, n):
             A_inverse[row, index] = col_i[row]
     return A_inverse
 
 
-print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
+print("\n Matrix M's inverse matrix (ours): \n", get_inverse_by_hand(M))
 
 
 def get_inverse_by_lib(A):
     """
-    Function that returns the inverse matrix of matrix A as computed by python's library.
+    Function that returns the inverse matrix of matrix A as computed by python's numpy library.
 
     :param A: matrix A
     :return: inverse of A
@@ -311,7 +310,7 @@ def get_inverse_by_lib(A):
     return np.linalg.inv(A)
 
 
-# print("\n Matrix M's inverse matrix (numpy): \n", get_inverse_by_lib(M))
+print("\n Matrix M's inverse matrix (numpy): \n", get_inverse_by_lib(M))
 
 
 def compute_norm_for_LLt_decomposition(A_init, b):
@@ -323,7 +322,7 @@ def compute_norm_for_LLt_decomposition(A_init, b):
     :return: euclidean norm value
     """
     X_chol = solve_system(A_init, b)
-    # X_chol = np.linalg.solve(A_init, b)     # computing x_cholesky
+    # X_chol = np.linalg.solve(A_init, b)   # computing x_cholesky
     mul = np.dot(A_init, X_chol)            # A_init * X_cholesky
     mul = np.subtract(mul, b)               # subtracting b
     val = np.linalg.norm(mul)               # computing euclidean norm on new result
@@ -333,7 +332,7 @@ def compute_norm_for_LLt_decomposition(A_init, b):
         print("\nNorm ||A_init * x_cholesky - b|| is ",  val,  ". \nComputation is faulty.")
 
 
-compute_norm_for_LLt_decomposition(M_init, b)
+compute_norm_for_LLt_decomposition(M, b)
 
 
 print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
