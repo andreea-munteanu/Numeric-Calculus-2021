@@ -175,7 +175,6 @@ M = cholesky_decomp(M)
 print("\nOur Cholesky decomposition (L, L_t): \n", M, "\n\n", get_transpose(M))
 
 
-
 def compute_det_A(L, L_t):
     """
     Function for computing det(A) = det(L) * det(L_t) = (l11 * l22 * .. * lnn) * (l11 * l22 * .. * lnn)
@@ -206,7 +205,7 @@ def solve_Ly_equals_b(A, b):
     Solve L * y = b  =>  find y*
 
     :param b: initial vector b
-    :return:
+    :return: vector y*
     """
     Y = []
     L = np.squeeze(np.asarray(A))
@@ -215,18 +214,46 @@ def solve_Ly_equals_b(A, b):
         y = b[row]
         for col in range(0, row):
             y -= np.dot(L[row, col], Y[col])
-        if abs(L[row, row]) < eps:
-            print("Error! Can't perform division.")
+        if abs(L[row, row]) < eps:  # eps -> 0
             possible = False
+            break
         else:  # if abs(L[row, row]) > eps: can perform division
             Y.append(y / L[row, row])
     if possible is True:
         return Y
 
+# def solve_Lt_x_equals_y_star(L, Y):
+#     """
+#
+#     :param L: lower triangular matrix (we will use its transpose -> upper triangular matrix)
+#     :param Y: y*
+#     :return: x* (solution)
+#     """
+#     L_t = get_transpose(L)  # upper triangular matrix
+#     X = []
+#     for row in range(n-1, -1, -1):
+#         x = Y[row]
+#         # print("Y[row] =", Y[row])
+#         for col in range(0, row):
+#             x -= np.dot(L_t[row, col], X[col])
+#         if abs(L_t[row, row]) < eps:  # eps -> 0
+#             break
+#         else:
+#             X.append(x / L_t[row, row])
+#         # X.append(Y[row] - np.dot(L_t[row+1:n, row Y[row+1, n]) / L_t[row, row])
+#     # X = np.array(X)
+#     # X = np.asmatrix(X)
+#     return X
+
 
 def solve_Lt_x_equals_y_star(L, Y):  # works; checked
     """
     Solve L_t * x = Y -> find x
+
+
+    :param L: lower triangular matrix (we will use its transpose -> upper triangular matrix)
+    :param Y: y*
+    :return: x* (solution)
     """
     L_t = get_transpose(L)  # upper triangular matrix
     # print(L_t)
@@ -243,11 +270,13 @@ def solve_Lt_x_equals_y_star(L, Y):  # works; checked
     return X
 
 
-def solve_system(A, b):
+def solve_system(B, b):
     # A will be
+    A = np.copy(B)
     print("\nb =", b)
     Y = solve_Ly_equals_b(A, b)
     print("Y =", Y)
+    A = np.copy(B)
     X = solve_Lt_x_equals_y_star(A, Y)  # function works with A_t
     print("X =", X)
     return X
@@ -258,7 +287,7 @@ print("M is now: \n", M)            # lower triangular matrix
 
 M_init2 = M_init
 
-X_cholesky = solve_system(cholesky_decomp(M_init), b)
+X_cholesky = solve_system(cholesky_decomp(M_init2), b)
 # M is now the lower triangular matrix of M_init
 print("\nX_cholesky is: ", X_cholesky)
 
@@ -278,7 +307,7 @@ def check_cholesky_is_correct(A, x_chol, b) -> bool:
 # print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M_init, ) else "No.")
 
 
-print("Is Cholesky correct? ", "Yes" if check_cholesky_is_correct(M_init2, X_cholesky, b) else "No")
+print("Is Cholesky correct? ", "Yes" if check_cholesky_is_correct(M_init, X_cholesky, b) else "No")
 
 
 def get_inverse_by_hand(A):
@@ -305,7 +334,7 @@ def get_inverse_by_hand(A):
     return A_inverse
 
 
-print("\n Matrix M's inverse matrix (ours): \n", get_inverse_by_hand(M_init))
+print("\n Matrix M's inverse matrix (ours): \n", get_inverse_by_hand(M_init2))
 
 
 def get_inverse_by_lib(A):
@@ -318,7 +347,7 @@ def get_inverse_by_lib(A):
     return np.linalg.inv(A)
 
 
-print("\n Matrix M's inverse matrix (numpy): \n", get_inverse_by_lib(M_init))
+print("\n Matrix M's inverse matrix (numpy): \n", get_inverse_by_lib(M_init2))
 
 
 def compute_norm_for_LLt_decomposition(A_init, b):
@@ -340,7 +369,7 @@ def compute_norm_for_LLt_decomposition(A_init, b):
         print("\nNorm ||A_init * x_cholesky - b|| is ",  val,  ". \nComputation is faulty.")
 
 
-compute_norm_for_LLt_decomposition(M, b)
+compute_norm_for_LLt_decomposition(M_init2, b)
 
 
 print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
@@ -376,7 +405,7 @@ def main():
 
         m = random.randint(5, 14)        # eps = 10 ** (-m), m in [5,13]
         eps = 10 ** (-m)
-        n = random.randint(3, 201)       # matrix size in [3, 200]
+        n = 3  # random.randint(3, 201)       # matrix size in [3, 200]
         M = generate_random_matrix(n)    # symmetrical already, no need to further check
         M_init = get_A_init(M)           # A_init
         b = []
@@ -398,6 +427,7 @@ def main():
         print("\nX_cholesky is: ", solve_system(M, b))
         print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
         compute_norm_for_LLt_decomposition(M_init, b)
+        compute_norm_for_approximation_of_cholesky_inverse(X_cholesky)
 
     elif input_method == 'b':
         # if input data is taken from file:
@@ -421,12 +451,29 @@ def main():
     else:
         # if input data is given from console:
         print("n = ", end='')
-        n = input()
+        n = int(input())
         print("m = ", end='')
         m = input()
+        eps = 10 ** (m * (-1))
         b = []
         bv = str(input("b = "))
         bv.split(" ")
         for i in b:
             b.append(float(i))
+        M = np.matrix([n, n])
+        for row in range(0, n):
+            for col in range(0, n):
+                M[row, col] = float(input())
+        M_init = np.copy(M)
+        M_T = get_transpose(M)
+        print("Transpose of M is: \n", M_T)
+        print("\nIs our matrix symmetric?", "Yes." if check_matrix_symmetry(M) else "No.")
+        print("\nIs our matrix's diagonal positive? ", "Yes." if check_diagonal_is_positive(M) else "No.")
+        L, L_t = library_cholesky_decomposition(M)
+        print("\nCholesky decomposition (numpy): \n", L, '\n\n', L_t, '\n')
+        print("\ndet(M) = ", compute_det_A(L, L_t))
+        print("\nIs our Cholesky decomposition correct? ", "Yes." if check_cholesky_is_correct(M) else "No.")
+        print("\nX_cholesky is: ", solve_system(M, b))
+        print("\n Matrix M's inverse matrix: \n", get_inverse_by_hand(M))
+        compute_norm_for_LLt_decomposition(M_init, b)
 
