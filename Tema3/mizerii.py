@@ -3,10 +3,10 @@ A = [[1, 2, 3],
      [7, 8, 9]]
 # for i in A:
 #     print(i)
-    # output:
-    # [1, 2, 3]
-    # [4, 5, 6]
-    # [7, 8, 9]
+# output:
+# [1, 2, 3]
+# [4, 5, 6]
+# [7, 8, 9]
 
 AA = [[(1, 102.5), (3, 2.5)],
       [(1, 3.5), (2, 104.88), (3, 1.05), (5, 0.33)],
@@ -16,12 +16,12 @@ AA = [[(1, 102.5), (3, 2.5)],
       ]
 # for i in AA:
 #     print(i)
-    # output:
-    # [(1, 102.5), (3, 2.5)]
-    # [(1, 3.5), (2, 104.88), (3, 1.05), (5, 0.33)]
-    # [(3, 100.0)]
-    # [(2, 1.3), (4, 101.3)]
-    # [(1, 0.73), (4, 1.5), (5, 102.23)]
+# output:
+# [(1, 102.5), (3, 2.5)]
+# [(1, 3.5), (2, 104.88), (3, 1.05), (5, 0.33)]
+# [(3, 100.0)]
+# [(2, 1.3), (4, 101.3)]
+# [(1, 0.73), (4, 1.5), (5, 102.23)]
 
 print("Accesarea elementelor de pe coloana 1")
 row_count = -1
@@ -49,6 +49,17 @@ for i in AA:
             # value at position(3, 2) is 1.3
             # value at position(3, 4) is 101.3
 
+file = open("our_sample.txt", "r")
+Counter = 0
+# Reading from file
+Content = file.read()
+CoList = Content.split("\n")
+for i in CoList:
+    if i:
+        Counter += 1
+
+print("This is the number of lines in the file")
+print(Counter)
 # check that A is written correctly from a.txt
 # our sample input file: our_sample.txt
 f = open('our_sample.txt', "r")
@@ -58,7 +69,7 @@ print("n =", n)
 B = [[] for _ in range(n)]
 print(B)
 count = -1
-while line:  # for line in a.txt:
+for _ in range(Counter - 1):  # for line in a.txt:
     count += 1
     line_i = f.readline().split(', ')
     val = float(line_i[0])
@@ -86,8 +97,8 @@ while line:  # for line in a.txt:
         # 2: [(2, 100.0)]
         # 3: [(1, 1.3), (3, 101.3)]
         # 4: [(0, 0.73), (3, 1.5), (4, 102.23)]
-        
-""" Nu mai ajunge aici pentru că își ia index out of range în while, god knows why"""       
+
+""" Nu mai ajunge aici pentru că își ia index out of range în while, god knows why"""
 # printing B
 count = -1
 for i in A:
