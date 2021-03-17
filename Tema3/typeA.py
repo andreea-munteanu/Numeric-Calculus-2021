@@ -82,3 +82,4 @@ def read_A(file):
 
 read_A('a.txt')
 # print(n, A)
+
