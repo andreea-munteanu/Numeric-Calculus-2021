@@ -2,41 +2,6 @@ import numpy as np
 import re
 
 
-def read_A_from_file(file):
-    """
-    Implementation with nested dictionaries.
-
-    :param file: input file
-    :return: matrix A as nested dictionary
-    """
-    f = open(file, "r")
-    n = int(f.readline())  # matrix size
-    # print("n =", n)  --> 2021
-    space = f.readline()
-    line = f.readline()
-    A = {}
-    count = 0
-    while line:
-        line_i = f.readline().split(', ')
-        val = line_i[0]
-        row, col = int(line_i[1]), int(line_i[2])
-        print(count, val, row, col)
-        if row in A.keys():
-            if col in A.keys():
-                pass
-        # else:
-        #     A[row] = {(val, col)}
-        #print(A)
-        # else:
-        #     new_row = dict()
-        #     new_row[col] = val
-        #     A[row] = new_row
-        count += 1
-    # print("A: \n", A)
-    f.close()
-    return n, A
-
-
 # find number of lines in input file 'a.txt'
 file = open("a.txt", "r")
 Counter = 0
@@ -60,7 +25,6 @@ def read_A(file):
     # print("n =", n)  --> 2021
     line = f.readline()
     A = [[] for _ in range(n)]
-    print(A)
     count = -1
     for _ in range(Counter - 1):  # for line in a.txt:
         count += 1
@@ -84,14 +48,13 @@ def read_A(file):
                 # if col doesn't exist on row, we add the tuple (col, val) on row 'i':
                 if not found_col:
                     i.append((col, float(val)))
-    # printing A
-    count = -1
-    for i in A:
-        count += 1
-        if i:
-            print("line", count, ": ", i, end='\n')
     f.close()
+    return n, A
 
 
-read_A('a.txt')
-# print(n, A)
+n, A = read_A('a.txt')
+print("n = ", n)
+count = 0
+for i in A:
+    print(count, ": ", i)
+    count += 1

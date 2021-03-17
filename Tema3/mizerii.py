@@ -49,7 +49,7 @@ for i in AA:
             # value at position(3, 2) is 1.3
             # value at position(3, 4) is 101.3
 
-file = open("our_sample.txt", "r")
+file = open("our_A.txt", "r")
 Counter = 0
 # Reading from file
 Content = file.read()
@@ -62,7 +62,7 @@ print("This is the number of lines in the file")
 print(Counter)
 # check that A is written correctly from a.txt
 # our sample input file: our_sample.txt
-f = open('our_sample.txt', "r")
+f = open('our_A.txt', "r")
 n = int(f.readline())  # matrix size
 line = f.readline()
 print("n =", n)
@@ -98,4 +98,33 @@ for _ in range(Counter - 1):  # for line in a.txt:
         # 3: [(1, 1.3), (3, 101.3)]
         # 4: [(0, 0.73), (3, 1.5), (4, 102.23)]
 
+
+a, b, c, = [], [], []
+
+
+def read_B_from_file(file, a, b, c):
+    f = open(file, "r")
+    n = int(f.readline())                           # 2021
+    p, q = int(f.readline()), int(f.readline())     # 1, 1
+    empty_line = f.readline()
+    counter = 3 * n - p - q
+    for _ in range(0, n):
+        val = f.readline()
+        a.append(float(val))
+    print("a =", a)
+
+    empty_line = f.readline()
+    for _ in range(0, n - p):
+        val = f.readline()
+        b.append(float(val))
+    print("b =", b)
+
+    empty_line = f.readline()
+    for _ in range(0, n - q):
+        val = f.readline()
+        c.append(float(val))
+    print("c =", c)
+
+
+read_B_from_file('our_b.txt', a, b, c)
 
