@@ -37,6 +37,17 @@ def read_A_from_file(file):
     return n, A
 
 
+# find number of lines in input file 'a.txt'
+file = open("a.txt", "r")
+Counter = 0
+# Reading from file
+Content = file.read()
+CoList = Content.split("\n")
+for i in CoList:
+    if i:
+        Counter += 1
+
+
 def read_A(file):
     """
     Implementation with list of lists.
@@ -51,7 +62,7 @@ def read_A(file):
     A = [[] for _ in range(n)]
     print(A)
     count = -1
-    for _ in range(0, n):  # for line in a.txt:
+    for _ in range(Counter - 1):  # for line in a.txt:
         count += 1
         line_i = f.readline().split(', ')
         val = line_i[0]
@@ -74,12 +85,13 @@ def read_A(file):
                 if not found_col:
                     i.append((col, float(val)))
     # printing A
+    count = -1
     for i in A:
+        count += 1
         if i:
-            print(i, end='\n')
+            print("line", count, ": ", i, end='\n')
     f.close()
 
 
 read_A('a.txt')
 # print(n, A)
-
