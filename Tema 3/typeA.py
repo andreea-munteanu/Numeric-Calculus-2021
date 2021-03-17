@@ -4,7 +4,10 @@ import re
 
 def read_A_from_file(file):
     """
-    Implementation with dictionaries (i wish)
+    Implementation with nested dictionaries.
+
+    :param file: input file
+    :return: matrix A as nested dictionary
     """
     f = open(file, "r")
     n = int(f.readline())  # matrix size
@@ -36,7 +39,10 @@ def read_A_from_file(file):
 
 def read_A(file):
     """
-    Implementation with lists of lists.
+    Implementation with list of lists.
+
+    :param file: input file 
+    :return: matrix A as list of lists
     """
     f = open(file, "r")
     n = int(f.readline())  # matrix size
@@ -64,6 +70,12 @@ def read_A(file):
                 # if col doesn't exist on row, we add the tuple (col, val) on row 'i':
                 if not found_col:
                     i.append((col, val))
+    # check that every line has at least 20 non-zero values:
+    count = -1
+    for i in A:
+        count += 1
+        if len(i) < 20:
+            print("Less that 20 non-zero elements on line", count)
     print(A)
     f.close()
 
