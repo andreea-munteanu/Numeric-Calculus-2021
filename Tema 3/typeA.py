@@ -48,14 +48,15 @@ def read_A(file):
     n = int(f.readline())  # matrix size
     # print("n =", n)  --> 2021
     line = f.readline()
-    A = [[] for i in range(n)]
+    A = [[] for _ in range(n)]
+    print(A)
     count = -1
     for _ in range(0, n):  # for line in a.txt:
         count += 1
         line_i = f.readline().split(', ')
         val = line_i[0]
         row, col = int(line_i[1]), int(line_i[2])
-        print(count, val, row, col)
+        # print(count, val, row, col)
         row_count = -1
         for i in A:  # 'i' is a list containing tuples (col, val)
             row_count += 1
@@ -64,23 +65,18 @@ def read_A(file):
                 for tup in i:
                     # if we reached an already registered (row, col) position:
                     if tup[0] == col:
+                        found_col = True
                         # we save new val, delete old (col, val) and add new tuple (col, new_val):
                         val += tup[1]
                         i.remove(tup)
-                        i.append((col, val))
+                        i.append((col, float(val)))
                 # if col doesn't exist on row, we add the tuple (col, val) on row 'i':
                 if not found_col:
-                    i.append((col, val))
-    # check that every line has at least 20 non-zero values:
-    count = -1
-    correct_A = True
+                    i.append((col, float(val)))
+    # printing A
     for i in A:
-        count += 1
-        if len(i) < 20:
-            print("Less that 20 non-zero elements on line", count)
-            correct_A = False
-    print("A is correctly defined" if correct_A else "A is not correctly defined")
-    print(A)
+        if i:
+            print(i, end='\n')
     f.close()
 
 
