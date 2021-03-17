@@ -98,11 +98,4 @@ for _ in range(Counter - 1):  # for line in a.txt:
         # 3: [(1, 1.3), (3, 101.3)]
         # 4: [(0, 0.73), (3, 1.5), (4, 102.23)]
 
-""" Nu mai ajunge aici pentru că își ia index out of range în while, god knows why"""
-# printing B
-count = -1
-for i in A:
-    count += 1
-    if i:
-        print("line", count, ": ", i, end='\n')
-f.close()
+
