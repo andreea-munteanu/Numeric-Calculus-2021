@@ -25,13 +25,13 @@ def read_B_from_file(file, a, b, c):
     # print("a =", a)
 
     empty_line = f.readline()
-    for _ in range(0, n - p):
+    for _ in range(0, n - q):
         val = f.readline()
         b.append(float(val))
     # print("b =", b)
 
     empty_line = f.readline()
-    for _ in range(0, n - q):
+    for _ in range(0, n - p):
         val = f.readline()
         c.append(float(val))
     # print("c =", c)

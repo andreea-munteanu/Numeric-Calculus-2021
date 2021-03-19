@@ -1,6 +1,11 @@
-A = [[1, 2, 3],
-     [4, 5, 6],
-     [7, 8, 9]]
+import numpy as np
+import copy
+from typeA import n, A
+from typeB import p, q, a, b, c
+
+# A = [[1, 2, 3],
+#      [4, 5, 6],
+#      [7, 8, 9]]
 # for i in A:
 #     print(i)
 # output:
@@ -8,11 +13,11 @@ A = [[1, 2, 3],
 # [4, 5, 6]
 # [7, 8, 9]
 
-AA = [[(1, 102.5), (3, 2.5)],
-      [(1, 3.5), (2, 104.88), (3, 1.05), (5, 0.33)],
-      [(3, 100.0)],
-      [(2, 1.3), (4, 101.3)],
-      [(1, 0.73), (4, 1.5), (5, 102.23)]
+AA = [[(0, 102.5), (2, 2.5)],
+      [(0, 3.5), (1, 104.88), (2, 1.05), (4, 0.33)],
+      [(2, 100.0)],
+      [(1, 1.3), (3, 101.3)],
+      [(0, 0.73), (3, 1.5), (4, 102.23)]
       ]
 # for i in AA:
 #     print(i)
@@ -23,7 +28,7 @@ AA = [[(1, 102.5), (3, 2.5)],
 # [(2, 1.3), (4, 101.3)]
 # [(1, 0.73), (4, 1.5), (5, 102.23)]
 
-print("Accesarea elementelor de pe coloana 1")
+#print("Accesarea elementelor de pe coloana 1")
 row_count = -1
 for i in AA:
     row_count += 1  # row in matrix
@@ -36,7 +41,8 @@ for i in AA:
             # value at position(1, 1) is 3.5
             # value at position(4, 1) is 0.73
 
-print("Accesarea elementelor de pe linia 3")
+
+# print("Accesarea elementelor de pe linia 3")
 desired_col = 3
 row_count = -1
 for i in AA:
@@ -58,8 +64,9 @@ for i in CoList:
     if i:
         Counter += 1
 
-print("This is the number of lines in the file")
-print(Counter)
+
+#print("This is the number of lines in the file")
+#print(Counter)
 # check that A is written correctly from a.txt
 # our sample input file: our_sample.txt
 f = open('our_A.txt', "r")
@@ -67,14 +74,13 @@ n = int(f.readline())  # matrix size
 line = f.readline()
 print("n =", n)
 B = [[] for _ in range(n)]
-print(B)
 count = -1
 for _ in range(Counter - 1):  # for line in a.txt:
     count += 1
     line_i = f.readline().split(', ')
     val = float(line_i[0])
     row, col = int(line_i[1]), int(line_i[2])
-    print(count, val, row, col)
+    # print(count, val, row, col)
     row_count = -1
     for i in B:  # 'i' is a list containing tuples (col, val)
         row_count += 1
@@ -91,7 +97,7 @@ for _ in range(Counter - 1):  # for line in a.txt:
             # if col doesn't exist on row, we add the tuple (col, val) on row 'i':
             if not found_col:
                 i.append((col, float(val)))
-        print(row_count, ": ", i)
+        # print(row_count, ": ", i)
         # 0: [(0, 102.5), (2, 2.5)]
         # 1: [(0, 3.5), (1, 104.88), (2, 1.05), (4, 0.33)]
         # 2: [(2, 100.0)]
@@ -103,6 +109,7 @@ a, b, c, = [], [], []
 
 
 def read_B_from_file(file, a, b, c):
+    a, b, c = [], [], []
     f = open(file, "r")
     n = int(f.readline())                           # 2021
     p, q = int(f.readline()), int(f.readline())     # 1, 1
@@ -124,7 +131,112 @@ def read_B_from_file(file, a, b, c):
         val = f.readline()
         c.append(float(val))
     print("c =", c)
+    return a, b, c
 
 
-read_B_from_file('our_b.txt', a, b, c)
+a, b, c = read_B_from_file('our_b.txt', a, b, c)
+
+
+def A_plus_B(n, A, p, q, a, b, c):
+    """
+    Method for computing sum A + B of sparse matrices.
+
+    :param n: size of square matrices A and B
+    :param A: matrix A stored as list of lists
+    :param p: distance between main diagonal a and second diagonal b in matrix B
+    :param q: distance between main diagonal a and third diagonal b in matrix B
+    :param a: main diagonal in B (stored as list)
+    :param b: second diagonal in B (stored as list)
+    :param c: third diagonal in B (stored as list)
+    :return: matrix (A + B)
+    """
+    SUM = A  # initially, SUM = A
+    print("\nSUM (initially) : ", end='\n')
+    for i in SUM:
+        print(i)
+    # adding elements on main diagonal:
+    row = -1  # current row in for
+    for i in SUM:
+        row += 1  # row count
+        found = False
+        for col in range(n - 1):
+            for tup in i:
+                if col == tup[0]:
+                    val = 0
+                    if row == col:
+                        val = tup[1] + a[col]
+                    elif col - row == q:
+                        val = tup[1] + b[col]
+                    elif row - col == p:
+                        val = tup[1] + c[col]
+                    # print(tup, val)
+                    print("removing ", tup, ", adding", (val, col), "at", (row, col))
+                    i.remove(tup)
+                    i.append((col, val))
+                    found = True
+                    break
+        if not found:
+            i.append((row, a[row]))
+            if row < n - 1:
+                i.append((row + q, b[row]))
+            if row > 0:
+                i.append((row - p, c[row]))
+
+    # sorting elements on row by col
+    for i in SUM:
+        i.sort(key=lambda tup: tup[0])
+    return SUM
+
+
+print("\nAA: ")
+for i in AA:
+    print(i)
+
+APLUSB = A_plus_B(n, AA, 1, 1, a, b, c)
+print("\nsum is: ")
+for i in APLUSB:
+    print(i)
+
+    #     for tup in i:
+    #         col += 1
+    #         # if col exists in SUM:
+    #         if tup[0] == col:
+    #             # ARE WE ON ONE OF THE DIAGONALS?
+    #             # main diagonal:
+    #             if row == col:
+    #                 val = tup[1] + a[col]
+    #                 print(val)
+    #                 i.remove(tup)
+    #                 i.append((col, val))
+    #             # second diagonal (vector b):
+    #             elif row == col - q:
+    #                 val = tup[1] + b[col]
+    #                 print(val)
+    #                 i.remove(tup)
+    #                 i.append((col, val))
+    #             # third diagonal (vector c):
+    #             elif col == row - p:
+    #                 val = tup[1] + c[col]
+    #                 print(val)
+    #                 i.remove(tup)
+    #                 i.append((col, val))
+    #         # if col doesn't exist in SUM:
+    #         else:
+    #             # main diagonal:
+    #             if row == col:
+    #                 pass
+    #             # second diagonal (vector b):
+    #             elif row == col - q:
+    #                 pass
+    #             # third diagonal (vector c):
+    #             elif col == row - p:
+    #                 pass
+    # return SUM
+
+
+
+# sum = A_plus_B(n, AA, p, q, a, b, c)
+# print("\n\nSUM after computation: ")
+# for i in sum:
+#     print(i)
 
