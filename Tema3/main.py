@@ -80,6 +80,23 @@ def A_plus_B(n, A, p, q, a, b, c):
     return SUM
 
 
+def A_times_B(n, A, p, q, a, b, c):
+    """
+    Method for computing product A * B of sparse matrices.
+
+    :param n: size of square matrices A and B
+    :param A: matrix A stored as list of lists
+    :param p: distance between main diagonal a and second diagonal b in matrix B
+    :param q: distance between main diagonal a and third diagonal b in matrix B
+    :param a: main diagonal in B (stored as list)
+    :param b: second diagonal in B (stored as list)
+    :param c: third diagonal in B (stored as list)
+    :return: matrix A*B
+    """
+    pass
+
+
+
 def export_matrix_to_file(output_file, n, mat):
     """
     Method for printing sparse matrix mat[n][n] in file text output_file.
@@ -127,39 +144,11 @@ def compare_files(file1, file2) -> bool:  # works
     return same
 
 
-def A_times_B(n, A, p, q, a, b, c):
-    """
-    Method for computing product A * B of sparse matrices.
-
-    :param n: size of square matrices A and B
-    :param A: matrix A stored as list of lists
-    :param p: distance between main diagonal a and second diagonal b in matrix B
-    :param q: distance between main diagonal a and third diagonal b in matrix B
-    :param a: main diagonal in B (stored as list)
-    :param b: second diagonal in B (stored as list)
-    :param c: third diagonal in B (stored as list)
-    :return: matrix A*B
-    """
-    pass
-
-
-def check_A_times_B(file, prod_matrix):
-    """
-    Boolean method for checking whether our computed matrices product is the same as the one in 'aorib.txt'
-
-    :param file: input file for A+B
-    :param sum_matrix: A+B computed by us
-    :return: true
-    """
-    C = A_plus_B(n, A, p, q, a, b, c)
-    return True
-
-
 if __name__ == "__main__":
     # compute sum:
     SUM = A_plus_B(n, A, p, q, a, b, c)
     # export sum to file:
     export_matrix_to_file('computed_sum.txt', n, SUM)
     # compare our result to the one in the given file:
-    print("Is the sum correct? ", "yes" if compare_files('computed_sum.txt', 'aplusb.txt') else "No")
+    print("Is the sum correct? ", "Yes" if compare_files('computed_sum.txt', 'aplusb.txt') else "No")
 
