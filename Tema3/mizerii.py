@@ -248,6 +248,7 @@ def A_plus_B2(n, A, p, q, a, b, c):
 def A_PLUS_B3(n, A, p, q, a, b, c):
     # initially, SUM = A
     SUM = A
+
     # adding elements on main diagonal (successful)
     for index, row in enumerate(SUM):
         found_tup = None
@@ -261,28 +262,9 @@ def A_PLUS_B3(n, A, p, q, a, b, c):
         else:
             val = found_tup[1] + a[index]
             row.remove(found_tup)
-            row.append((index, val))
-    # adding elements on main diagonal:
-    # for index in range(len(a)):
-    #     found_index = False
-    #     found_tup = None
-    #     val = 0
-    #     for row in A:
-    #         for tup in row:
-    #             if tup[0] == index:
-    #                 found_index = True
-    #                 found_tup = tup
-    #                 val = tup[1] + a[index]
-    #                 break
-    #         if found_index:
-    #             row.remove(found_tup)
-    #             row.append((found_index, val))
-    #         else:
-    #             row.append((index, a[index]))
+            if val != 0:
+                row.append((index, val))
 
-    # adding elements on diagonal b:
-
-    # adding elements on diagonal c:
     # adding elements on diagonal b: (successful)
     for index, row in enumerate(SUM):
         found_tup = None
@@ -295,10 +277,11 @@ def A_PLUS_B3(n, A, p, q, a, b, c):
             if index < n - 1:
                 row.append((index + q, b[index]))
         else:
-            if index < n - 1:
+            if index < n:
                 val = found_tup[1] + b[index]
                 row.remove(found_tup)
-                row.append((index + q, val))
+                if val != 0:
+                    row.append((index + q, val))
 
     # adding elements on diagonal c: (successful)
     for index, row in enumerate(SUM):
@@ -312,10 +295,11 @@ def A_PLUS_B3(n, A, p, q, a, b, c):
             if index > 0:
                 row.append((index - p, c[index - p]))
         else:
-            if index < n - 1:
+            if index < n:
                 val = found_tup[1] + c[index - p]
                 row.remove(found_tup)
-                row.append((index - p, val))
+                if val != 0:
+                    row.append((index - p, val))
 
     # sorting elements on row by col
     for i in SUM:
