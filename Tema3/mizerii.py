@@ -333,7 +333,6 @@ def check_A_plus_B() -> bool:
     pass
 
 
-
 # sum = A_plus_B(n, AA, p, q, a, b, c)
 # print("\n\nSUM after computation: ")
 # for i in sum:

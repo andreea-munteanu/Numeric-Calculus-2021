@@ -53,7 +53,7 @@ def read_A(file):
 
 
 n, A = read_A('a.txt')
-print("n = ", n)
+# print("n = ", n)
 # count = 0
 # for i in A:
 #     print(count, ": ", i)

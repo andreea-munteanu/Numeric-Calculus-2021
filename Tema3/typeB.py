@@ -40,3 +40,4 @@ def read_B_from_file(file, a, b, c):
 
 
 p, q, a, b, c = read_B_from_file('b.txt', a, b, c)
+# print(p, q, a, b, c, sep='\n')
