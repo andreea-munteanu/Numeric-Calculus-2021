@@ -160,14 +160,16 @@ def A_plus_B(n, A, p, q, a, b, c):
         row += 1  # row count
         found = False
         for col in range(n - 1):
+            # we look for every col, see if it appears in tuples and add vectors b where necessary
             for tup in i:
                 if col == tup[0]:
+                    # val will be sum (A+B)[row][col]
                     val = 0
-                    if row == col:
+                    if row == col:  # main diagonal
                         val = tup[1] + a[col]
-                    elif col - row == q:
+                    elif col - row == q:  # diagonal q
                         val = tup[1] + b[col]
-                    elif row - col == p:
+                    elif row - col == p:  # diagonal p
                         val = tup[1] + c[col]
                     # print(tup, val)
                     print("removing ", tup, ", adding", (val, col), "at", (row, col))
@@ -188,50 +190,147 @@ def A_plus_B(n, A, p, q, a, b, c):
     return SUM
 
 
-print("\nAA: ")
-for i in AA:
-    print(i)
+def A_plus_B2(n, A, p, q, a, b, c):
+    SUM = A  # initially, SUM = A
+    # print("\nSUM (initially) : ", end='\n')
+    for i in SUM:
+        print(i)
+    # adding elements on main diagonal:
+    row = -1  # current row in for
+    for i in SUM:
+        row += 1  # row count
+        count_col = 0
+        tup_count = 0
+        while count_col < n and tup_count < len(i):
+            if count_col == i[tup_count][0]:
+                added_val = 0
+                # main diagonal
+                if row == count_col:
+                    added_val = i[tup_count][1] + a[count_col]
+                # diagonal b
+                elif count_col - row == q:
+                    added_val = i[tup_count][1] + b[count_col]
+                # diagonal c
+                elif row - count_col == p:
+                    added_val = i[tup_count][1] + c[count_col]
+                # print("removing ", i[tup_count], ", adding", (count_col, added_val), "at", (row, count_col))
+                i.remove(i[tup_count])
+                i.append((count_col, added_val))
+                count_col += 1
+                tup_count += 1
+            elif count_col < i[tup_count][0]:
+                # if row == tup_count:
+                #     i.append((tup_count, a[tup_count]))
+                # elif tup_count - row == q:
+                #     i.append((tup_count, b[tup_count]))
+                # elif row - count_col == p:
+                #     i.append((tup_count, c[tup_count]))
+                count_col += 1
+            elif count_col > i[tup_count][0]:
+                # if row == count_col:
+                #     i.append((count_col, a[count_col]))
+                # elif count_col - row == q:
+                #     i.append((count_col, b[count_col]))
+                # elif row - count_col == p:
+                #     i.append((count_col, c[count_col]))
+                tup_count += 1
+    # sorting elements on row by col
+    for i in SUM:
+        i.sort(key=lambda tup: tup[0])
+    return SUM
 
-APLUSB = A_plus_B(n, AA, 1, 1, a, b, c)
+#
+# print("\nAA: ")
+# for i in AA:
+#     print(i)
+
+
+def A_PLUS_B3(n, A, p, q, a, b, c):
+    # initially, SUM = A
+    SUM = A
+    # adding elements on main diagonal (successful)
+    for index, row in enumerate(SUM):
+        found_tup = None
+        found_index = False
+        for tup in row:
+            if tup[0] == index:
+                found_tup = tup
+                found_index = True
+        if not found_index:
+            row.append((index, a[index]))
+        else:
+            val = found_tup[1] + a[index]
+            row.remove(found_tup)
+            row.append((index, val))
+    # adding elements on main diagonal:
+    # for index in range(len(a)):
+    #     found_index = False
+    #     found_tup = None
+    #     val = 0
+    #     for row in A:
+    #         for tup in row:
+    #             if tup[0] == index:
+    #                 found_index = True
+    #                 found_tup = tup
+    #                 val = tup[1] + a[index]
+    #                 break
+    #         if found_index:
+    #             row.remove(found_tup)
+    #             row.append((found_index, val))
+    #         else:
+    #             row.append((index, a[index]))
+
+    # adding elements on diagonal b:
+
+    # adding elements on diagonal c:
+    # adding elements on diagonal b: (successful)
+    for index, row in enumerate(SUM):
+        found_tup = None
+        found_index = False
+        for tup in row:
+            if tup[0] > 0 and tup[0] == index + q:
+                found_tup = tup
+                found_index = True
+        if not found_index:
+            if index < n - 1:
+                row.append((index + q, b[index]))
+        else:
+            if index < n - 1:
+                val = found_tup[1] + b[index]
+                row.remove(found_tup)
+                row.append((index + q, val))
+
+    # adding elements on diagonal c: (successful)
+    for index, row in enumerate(SUM):
+        found_tup = None
+        found_index = False
+        for tup in row:
+            if tup[0] == index - p:
+                found_tup = tup
+                found_index = True
+        if not found_index:
+            if index > 0:
+                row.append((index - p, c[index - p]))
+        else:
+            if index < n - 1:
+                val = found_tup[1] + c[index - p]
+                row.remove(found_tup)
+                row.append((index - p, val))
+
+    # sorting elements on row by col
+    for i in SUM:
+        i.sort(key=lambda tup: tup[0])
+    return SUM
+
+
+APLUSB = A_PLUS_B3(n, AA, 1, 1, a, b, c)
 print("\nsum is: ")
 for i in APLUSB:
     print(i)
 
-    #     for tup in i:
-    #         col += 1
-    #         # if col exists in SUM:
-    #         if tup[0] == col:
-    #             # ARE WE ON ONE OF THE DIAGONALS?
-    #             # main diagonal:
-    #             if row == col:
-    #                 val = tup[1] + a[col]
-    #                 print(val)
-    #                 i.remove(tup)
-    #                 i.append((col, val))
-    #             # second diagonal (vector b):
-    #             elif row == col - q:
-    #                 val = tup[1] + b[col]
-    #                 print(val)
-    #                 i.remove(tup)
-    #                 i.append((col, val))
-    #             # third diagonal (vector c):
-    #             elif col == row - p:
-    #                 val = tup[1] + c[col]
-    #                 print(val)
-    #                 i.remove(tup)
-    #                 i.append((col, val))
-    #         # if col doesn't exist in SUM:
-    #         else:
-    #             # main diagonal:
-    #             if row == col:
-    #                 pass
-    #             # second diagonal (vector b):
-    #             elif row == col - q:
-    #                 pass
-    #             # third diagonal (vector c):
-    #             elif col == row - p:
-    #                 pass
-    # return SUM
+
+def check_A_plus_B() -> bool:
+    pass
 
 
 

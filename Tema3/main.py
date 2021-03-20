@@ -18,54 +18,70 @@ def A_plus_B(n, A, p, q, a, b, c):
     :param c: third diagonal in B (stored as list)
     :return: matrix (A + B)
     """
-    SUM = np.copy.deepcopy(A)  # initially, SUM = A
-    col = 0   # current col in for
-    row = -1  # current row in for
+    # initially, SUM = A
+    SUM = A
+    # adding elements on main diagonal (successful)
+    for index, row in enumerate(SUM):
+        found_tup = None
+        found_index = False
+        for tup in row:
+            if tup[0] == index:
+                found_tup = tup
+                found_index = True
+        if not found_index:
+            row.append((index, a[index]))
+        else:
+            val = found_tup[1] + a[index]
+            row.remove(found_tup)
+            row.append((index, val))
+    for index, row in enumerate(SUM):
+        found_tup = None
+        found_index = False
+        for tup in row:
+            if tup[0] > 0 and tup[0] == index + q:
+                found_tup = tup
+                found_index = True
+        if not found_index:
+            if index < n - 1:
+                row.append((index + q, b[index]))
+        else:
+            if index < n - 1:
+                val = found_tup[1] + b[index]
+                row.remove(found_tup)
+                row.append((index + q, val))
+
+    # adding elements on diagonal c: (successful)
+    for index, row in enumerate(SUM):
+        found_tup = None
+        found_index = False
+        for tup in row:
+            if tup[0] == index - p:
+                found_tup = tup
+                found_index = True
+        if not found_index:
+            if index > 0:
+                row.append((index - p, c[index - p]))
+        else:
+            if index < n - 1:
+                val = found_tup[1] + c[index - p]
+                row.remove(found_tup)
+                row.append((index - p, val))
+
+    # sorting elements on row by col
     for i in SUM:
-        row += 1
-        col = 0
-        for tup in i:
-            # if col exists in SUM:
-            if tup[0] == col:
-                # main diagonal:
-                if row == col:
-                    val = tup[1] + a[col]
-                    SUM.remove(tup)
-                    SUM.append((col, val))
-                # second diagonal (vector b):
-                elif row == col - q:
-                    val = tup[1] + b[col]
-                    SUM.remove(tup)
-                    SUM.append((col, val))
-                # third diagonal (vector c):
-                elif col == row - p:
-                    val = tup[1] + c[col]
-                    SUM.remove(tup)
-                    SUM.append((col, val))
-            # if col doesn't exist in SUM:
-            else:
-                # main diagonal:
-                if row == col:
-                    pass
-                # second diagonal (vector b):
-                elif row == col - q:
-                    pass
-                # third diagonal (vector c):
-                elif col == row - p:
-                    pass
+        i.sort(key=lambda tup: tup[0])
     return SUM
 
 
-def check_A_plus_B(file, sum_matrix) -> bool:
+def check_A_plus_B(file, SUM) -> bool:
     """
     Boolean method for checking whether our computed sum is the same as the one in 'aplusb.txt'
 
     :param file: input file for A+B
-    :param sum_matrix: A+B computed by us
+    :param SUM: A+B computed by us
     :return: true
     """
-    C = A_plus_B(n, A, p, q, a, b, c)
-    return True
+    pass
 
 
 def A_times_B(n, A, p, q, a, b, c):
@@ -81,7 +97,6 @@ def A_times_B(n, A, p, q, a, b, c):
     :param c: third diagonal in B (stored as list)
     :return: matrix A*B
     """
-    P = np.copy.deepcopy(A)
     pass
 
 
