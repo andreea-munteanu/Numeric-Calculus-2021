@@ -92,15 +92,13 @@ def export_matrix_to_file(output_file, n, mat):
     :return:
     """
     with open(output_file, 'w') as f:
-        print(n, file=f)
-        print("", file=f)
-        row = -1
-        for i in mat:
-            row += 1
-            for tup in i:
-                print(tup[1] + ", " + row, end='', file=f)
-                print(", ", end='', file=f)
-                print(tup[0], file=f)
+    print(n, file=f)
+    print("", file=f)
+    row = -1
+    for i in mat:
+        row += 1
+        for tup in i:
+            print(tup[1], ", ", row, ", ", tup[0], file=f, sep='')
 
 
 def check_with_file(file1, file2) -> bool:
