@@ -52,7 +52,7 @@ def read_A(file):
     return n, A
 
 
-n, A = read_A('a.txt')
+
 # print("n = ", n)
 # count = 0
 # for i in A:

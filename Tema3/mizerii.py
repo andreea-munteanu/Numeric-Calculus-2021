@@ -1,7 +1,5 @@
 import numpy as np
 import copy
-from typeA import n, A
-from typeB import p, q, a, b, c
 
 # A = [[1, 2, 3],
 #      [4, 5, 6],
@@ -19,6 +17,8 @@ AA = [[(0, 102.5), (2, 2.5)],
       [(1, 1.3), (3, 101.3)],
       [(0, 0.73), (3, 1.5), (4, 102.23)]
       ]
+
+print(AA[0][0][1])
 # for i in AA:
 #     print(i)
 # output:
@@ -137,6 +137,37 @@ def read_B_from_file(file, a, b, c):
 a, b, c = read_B_from_file('our_b.txt', a, b, c)
 
 
+def turn_B_into_list_of_lists(n, p, q, a, b, c):
+    """
+
+    :param n:
+    :param p:
+    :param q:
+    :param a:
+    :param b:
+    :param c:
+    :return:
+    """
+    B = []
+    for index in range(0, n):
+        row = []
+        # adding element on main diagonal
+        row.append((index, a[index]))
+        # adding element on diagonal b
+        if index < n - q:
+            row.append((index + q, b[index]))
+        # adding element on diagonal c
+        if index > p - 1 and index < n:  # p = 1
+            row.append((index - p, c[index - p]))
+        B.append(row)
+    for i in B:
+        i.sort(key=lambda tup: tup[0])
+    return B
+
+mat_B = turn_B_into_list_of_lists(n, 1, 1, a, b, c)
+for i in mat_B:
+    print(i)
+
 def A_plus_B(n, A, p, q, a, b, c):
     """
     Method for computing sum A + B of sparse matrices.
@@ -239,11 +270,6 @@ def A_plus_B2(n, A, p, q, a, b, c):
         i.sort(key=lambda tup: tup[0])
     return SUM
 
-#
-# print("\nAA: ")
-# for i in AA:
-#     print(i)
-
 
 def A_PLUS_B3(n, A, p, q, a, b, c):
     # initially, SUM = A
@@ -313,12 +339,42 @@ for i in APLUSB:
     print(i)
 
 
-def check_A_plus_B() -> bool:
-    pass
-
-
 # sum = A_plus_B(n, AA, p, q, a, b, c)
 # print("\n\nSUM after computation: ")
 # for i in sum:
 #     print(i)
+
+def A_times_B(n, A, p, q, a, b, c):
+    """
+    vectorii pt b transformați într-o listă de liste ca A
+    și făcută înmulțirea pe formula aia cu C(i,j)
+    """
+    P = []
+    row_index = 0  # row count
+    for i in A:
+        P_row = []
+        for index in range(0, n - 1):
+            val = 0
+            pos = 0
+            for tup in i:
+                if tup[0] == index:             # col == row --> vector a
+                    val += tup[1] * a[index]
+                    pos = tup[0]
+                if 0 < tup[0] == index + q:       # col == row + p --> vector b
+                    val += tup[1] * b[index]
+                    pos = tup[0]
+                if 1 < tup[0] == index - p:
+                    val += tup[1] * c[index]    # col == row - q --> vector b
+                    pos = tup[0]
+            P_row.append((pos, val))
+        P.append(P_row)
+        row_index += 1
+    return P
+
+
+P = A_times_B(n, AA, 1, 1, a, b, c)
+print('\n')
+for i in P:
+    print(i)
+
 

@@ -1,9 +1,14 @@
 import numpy as np
-from typeA import n, A
-from typeB import p, q, a, b, c
+from typeA import read_A
+from typeB import read_B_from_file
 import filecmp
 
+# error epsilon
 eps = 10 ** (-9)
+# vectors for tridiagonal matrix B:
+a = []
+b = []
+c = []
 
 
 def A_plus_B(n, A, p, q, a, b, c):
@@ -43,7 +48,7 @@ def A_plus_B(n, A, p, q, a, b, c):
         found_tup = None
         found_index = False
         for tup in row:
-            if tup[0] > 0 and tup[0] == index + q:
+            if tup[0] < n - q and tup[0] == index + q:
                 found_tup = tup
                 found_index = True
         if not found_index:
@@ -61,7 +66,7 @@ def A_plus_B(n, A, p, q, a, b, c):
         found_tup = None
         found_index = False
         for tup in row:
-            if tup[0] == index - p:
+            if tup[0] > p - 1 and tup[0] == index - p:
                 found_tup = tup
                 found_index = True
         if not found_index:
@@ -80,9 +85,39 @@ def A_plus_B(n, A, p, q, a, b, c):
     return SUM
 
 
+def turn_B_into_list_of_lists(n, p, q, a, b, c):
+    """
+    Method for turning vectors a[n], b[n-1], c[n-1] representing B into a list of list similar to A.
+
+    :param n: size of matrices
+    :param p:
+    :param q:
+    :param a:
+    :param b:
+    :param c:
+    :return:
+    """
+    B = []
+    for index in range(0, n):
+        row = []
+        # adding element on main diagonal
+        row.append((index, a[index]))
+        # adding element on diagonal b
+        if index < n - q:
+            row.append((index + q, b[index]))
+        # adding element on diagonal c
+        if p - 1 < index < n:  # p = 1
+            row.append((index - p, c[index - p]))
+        B.append(row)
+    for i in B:
+        i.sort(key=lambda tup: tup[0])
+    return B
+
+
 def A_times_B(n, A, p, q, a, b, c):
     """
     Method for computing product A * B of sparse matrices.
+    P(i, j) = sum( A(i, k) * B(k, i) ), k = 1..n
 
     :param n: size of square matrices A and B
     :param A: matrix A stored as list of lists
@@ -93,8 +128,50 @@ def A_times_B(n, A, p, q, a, b, c):
     :param c: third diagonal in B (stored as list)
     :return: matrix A*B
     """
-    pass
+    C = []
+    B = turn_B_into_list_of_lists(n, p, q, a, b, c)
+    for i, row in enumerate(A):
+        for j, col in enumerate(B):
+            if row[i][1] == col[]
 
+
+        # s = 0  # element C(i, j)
+        # for j, col in enumerate(B):
+        #     found = None
+        #     for tup1 in row:
+        #         if tup1[0] == j:
+        #             found = tup1
+        #             break
+        #     if found is None:
+        #         pass
+        #     else:
+        #         if j == i:
+        #             s += found[1] * col[1]
+
+
+
+
+
+
+
+
+    # P = []
+    # row_index = 0  # row count
+    # for i in A:
+    #     P_row = []
+    #     for index in range(len(i)):
+    #         val = 0
+    #         for tup in i:
+    #             if tup[0] == index:             # col == row --> vector a
+    #                 val += tup[1] * a[index]
+    #             elif tup[0] == index + q:       # col == row + p --> vector b
+    #                 val += tup[1] * b[index]
+    #             elif tup[0] == index - p:
+    #                 val += tup[1] * c[index]    # col == row - q --> vector b
+    #         P_row.append((row_index, val))
+    #     P.append(P_row)
+    #     row_index += 1
+    # return P
 
 
 def export_matrix_to_file(output_file, n, mat):
@@ -145,10 +222,17 @@ def compare_files(file1, file2) -> bool:  # works
 
 
 if __name__ == "__main__":
+    # read n, A, p, q, a, b, c from text files:
+    n, A = read_A('a.txt')
+    p, q, a, b, c = read_B_from_file('b.txt', a, b, c)
     # compute sum:
     SUM = A_plus_B(n, A, p, q, a, b, c)
     # export sum to file:
     export_matrix_to_file('computed_sum.txt', n, SUM)
     # compare our result to the one in the given file:
     print("Is the sum correct? ", "Yes" if compare_files('computed_sum.txt', 'aplusb.txt') else "No")
+    PROD = A_times_B(n, A, p, q, a, b, c)
+    export_matrix_to_file('computed_product.txt', n, PROD)
+    print("Is product correct?", "Yes" if compare_files('computed_product.txt', 'aorib.txt') else "No")
+
 

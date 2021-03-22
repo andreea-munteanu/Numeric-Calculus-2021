@@ -1,9 +1,3 @@
-# vectors for tridiagonal matrix B:
-a = []
-b = []
-c = []
-
-
 def read_B_from_file(file, a, b, c):
     """
     Method for extracting input for tridiagonal matrix B from input file.
@@ -38,6 +32,3 @@ def read_B_from_file(file, a, b, c):
 
     return p, q, a, b, c
 
-
-p, q, a, b, c = read_B_from_file('b.txt', a, b, c)
-# print(p, q, a, b, c, sep='\n')
