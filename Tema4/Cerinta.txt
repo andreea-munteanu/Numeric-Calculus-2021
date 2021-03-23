@@ -1,1 +1,0 @@
-ceva cu multe fișiere, matrici rare și sisteme de ecuații size = 70000000
