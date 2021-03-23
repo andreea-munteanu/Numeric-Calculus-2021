@@ -1,0 +1,1 @@
+gauss_seidel pentru sisteme Ax = f, unde A = sparse matrix
