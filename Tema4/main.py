@@ -69,41 +69,48 @@ def gauss_seidel(a, b, c, f, epsilon):
     """
     Method for computing the Gauss Seidel iterative method for sparse linear system solution approximation.
 
-    :return:
+    :return: x_gs
     """
     # initially, xgs = 0:
     xgs = [0 for _ in range(n)]
     delta_x = 0.0
     k = 0
     kmax = 10000  # maximum 10000 iterations
-    while k < kmax:
-        print(k, ": ", sep='', end='')
+    running = True
+    while k < kmax and running:
+        # print(k, ": ", sep='', end='\n')
         delta_x = 0.0
         for i in range(0, n):
             sum1 = 0.0
             sum2 = 0.0
-            for j in (1, i):
-                if j < i and j == i - q:
-                    sum1 += c[j] * xgs[j]
-                elif j > i and j == i + p:
-                    sum2 += b[j] * xgs[j]
+            for j in range(1, i):
+                sum1 += c[j] * xgs[j]
+            for j in range(i+1, n - 1):
+                sum2 += b[j] * xgs[j]
             i_xgs = xgs[i]
             xgs[i] = (f[i] - sum1 - sum2) / a[i]
             delta_x += (xgs[i] - i_xgs) ** 2  # delta_x = ||x_c - x_p||
         delta_x = sqrt(delta_x)
-        if delta_x < epsilon or delta_x >= 10 ** 8:
-            break
-        k += 1
-    print(f'Number of iterations: {k}')
+        # if we reach convergence, we display the number of iterations:
+        if delta_x < epsilon:
+            print(f'\nNumber of iterations: {k}')
+            running = False
+        elif delta_x > 10 ** 8:
+            running = False
+        else:
+            k += 1
     if delta_x >= epsilon:
-        raise Exception("Divergence")
+        raise Exception("Divergence.")
     else:
         # x_c is the approximation of the exact solution
         return xgs
 
 
-def check_solution(x_gs, f, a, b, c, p, q):
+def check_solution(x_gs, f, a, b, c, p, q, n):
     """
+    EROARE AICI APARENT DIN CAUZA MEMORIEI
+
+
     Method for determining whether our computed solution 'sol' is correct.
     We will compute the norm ||A * x_GS - f||∞.
 
@@ -115,17 +122,35 @@ def check_solution(x_gs, f, a, b, c, p, q):
     :param q: index q
     :return: true if sol is correct with error epsilon, false otherwise
     """
-    diagonals = [a, b, c]
-    diagonals = diags(diagonals, [0, p, -q]).toarray()
-    prod = diagonals.dot(x_gs)       # A * x_GS
-    res = prod.subtract(f)           # A * x_GS - f
-    return linalg.norm(res, np.inf)  # ||A * x_GS - f||∞
+    a = [1, 2, 3, 4, 5]
+    b = [5, 6, 7, 8]
+    c = [9, 10, 11, 12]
+    x_gs = [100, 200, 300, 400, 500]
+    prod = []  # A * x_GS
+    for i in range(0, n):
+        print("i=", i)
+        p_i = 0
+        if i == 0:
+            p_i += a[0] * x_gs[0] + b[0] * x_gs[1]
+        elif i == n - 1:
+            p_i += c[n-2] * x_gs[n-2] + a[n-1] * x_gs[n-1]
+        else:
+            p_i += a[i] * x_gs[i]
+            # p_i += c[i-1] * x_gs[i-1]
+            # p_i += b[i-1] * x_gs[i+1]
+        print(p_i)
+        prod.append(p_i - f[i])
+    print(prod)
+    # diagonals = diags(diagonals, [0, p, -q]).toarray()
+    # prod = diagonals.dot(x_gs)       # A * x_GS
+    # res = prod.subtract(f)           # A * x_GS - f
+    return linalg.norm(prod, np.inf)   # ||A * x_GS - f||∞
 
 
 if __name__ == '__main__':
     # extracting data from input files a_i:
     for i in range(1, 6):
-        print(f'\nIteration for files a{i}, f{i}:\n___________________________')
+        print(f'\nRun for files a{i}, f{i}:\n_____________________')
         n, p, q, a, b, c = extract_data_from_a(f'a{i}.txt')
         # computation error epsilon = 10 ^ (-p)
         eps = 10 ** (-p)
@@ -133,15 +158,10 @@ if __name__ == '__main__':
         if check_diagonal(a, eps):
             f = extract_f(f'f{i}.txt')
             x_GS = gauss_seidel(a, b, c, f, eps)
-            print(f'Checking solution: {check_solution(x_GS, f, a, b, c, p, q)}')
-            # print("x_GS: ", x_GS)
+            # check_solution(x_GS, f, a, b, c, p, q, n)
+            print(f'Checking solution: {check_solution(x_GS, f, a, b, c, p, q, n)}')
+            # print("x_GS: ", x_GS, end='\n')
         else:
             print("Main diagonal has 0 values. "
-                  "The system cannot be solved using successive over-relaxation iterative method.")
-
-
-
-
-
-
+                  "The system cannot be solved using successive over-relaxation iterative method.", end='\n')
 
