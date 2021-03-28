@@ -83,13 +83,17 @@ def gauss_seidel(a, b, c, f, epsilon):
         for i in range(0, n):
             sum1 = 0.0
             sum2 = 0.0
-            for j in range(1, i):
-                sum1 += c[j] * xgs[j]
-            for j in range(i+1, n - 1):
-                sum2 += b[j] * xgs[j]
+            j = k
+            if 0 < j < i:
+                if j - i == p:
+                    sum1 += b[j] * xgs[j]
+            elif i < j < n:
+                if i - j == q:
+                    sum2 += c[j] * xgs[j]
             i_xgs = xgs[i]
             xgs[i] = (f[i] - sum1 - sum2) / a[i]
-            delta_x += (xgs[i] - i_xgs) ** 2  # delta_x = ||x_c - x_p||
+            # delta_x = ||x_c - x_p||2 = sqrt(sum(x_c - x_p)))
+            delta_x += (xgs[i] - i_xgs) * (xgs[i] - i_xgs)
         delta_x = sqrt(delta_x)
         # if we reach convergence, we display the number of iterations:
         if delta_x < epsilon:
@@ -99,6 +103,7 @@ def gauss_seidel(a, b, c, f, epsilon):
             running = False
         else:
             k += 1
+        # print(xgs)
     if delta_x >= epsilon:
         raise Exception("Divergence.")
     else:
@@ -152,6 +157,7 @@ if __name__ == '__main__':
     for i in range(1, 6):
         print(f'\nRun for files a{i}, f{i}:\n_____________________')
         n, p, q, a, b, c = extract_data_from_a(f'a{i}.txt')
+        # print(a, b, c, sep='\n')
         # computation error epsilon = 10 ^ (-p)
         eps = 10 ** (-p)
         # only move forward if main diagonal contains non-zero values only:
@@ -159,8 +165,8 @@ if __name__ == '__main__':
             f = extract_f(f'f{i}.txt')
             x_GS = gauss_seidel(a, b, c, f, eps)
             # check_solution(x_GS, f, a, b, c, p, q, n)
-            print(f'Checking solution: {check_solution(x_GS, f, a, b, c, p, q, n)}')
-            # print("x_GS: ", x_GS, end='\n')
+            # print(f'Checking solution: {check_solution(x_GS, f, a, b, c, p, q, n)}')
+            print("x_GS: ", x_GS, end='\n')
         else:
             print("Main diagonal has 0 values. "
                   "The system cannot be solved using successive over-relaxation iterative method.", end='\n')
