@@ -89,7 +89,7 @@ def gauss_seidel(a, b, c, f, epsilon):
                     sum1 += b[j] * xgs[j]
             elif i < j < n:
                 if i - j == q:
-                    sum2 += c[j] * xgs[j]
+                    sum2 += c[j] * xgs[j - 1]
             i_xgs = xgs[i]
             xgs[i] = (f[i] - sum1 - sum2) / a[i]
             # delta_x = ||x_c - x_p||2 = sqrt(sum(x_c - x_p)))
@@ -154,7 +154,7 @@ def check_solution(x_gs, f, a, b, c, p, q, n):
 
 if __name__ == '__main__':
     # extracting data from input files a_i:
-    for i in range(1, 6):
+    for i in range(1, 2):
         print(f'\nRun for files a{i}, f{i}:\n_____________________')
         n, p, q, a, b, c = extract_data_from_a(f'a{i}.txt')
         # print(a, b, c, sep='\n')
@@ -164,9 +164,8 @@ if __name__ == '__main__':
         if check_diagonal(a, eps):
             f = extract_f(f'f{i}.txt')
             x_GS = gauss_seidel(a, b, c, f, eps)
-            # check_solution(x_GS, f, a, b, c, p, q, n)
-            # print(f'Checking solution: {check_solution(x_GS, f, a, b, c, p, q, n)}')
             print("x_GS: ", x_GS, end='\n')
+            # print(f'Checking solution: {check_solution(x_GS, f, a, b, c, p, q, n)}')
         else:
             print("Main diagonal has 0 values. "
                   "The system cannot be solved using successive over-relaxation iterative method.", end='\n')
