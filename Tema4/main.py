@@ -122,25 +122,27 @@ def check_solution(x_gs, f, a, b, c, p, q, n):
     :param q: index q
     :return: ||A * x_GS - f||∞
     """
-    a = [1, 2, 3, 4, 5]
-    b = [5, 6, 7, 8]
-    c = [9, 10, 11, 12]
-    x_gs = [100, 200, 300, 400, 500]
+    # a = [1, 2, 3, 4, 5]
+    # b = [5, 6, 7, 8]
+    # c = [9, 10, 11, 12]
+    # x_gs = [100, 200, 300, 400, 500]
     prod = []  # A * x_GS
-    for i in range(0, n - 1):
-        print("i=", i)
+    for i in range(0, n):
+        # print("i=", i)
         p_i = 0
-        if i == 0:
+        if i == 0:  # correct; checked
             p_i += a[0] * x_gs[0] + b[0] * x_gs[1]
         elif i == n - 1:
-            p_i += c[n-1-q] * x_gs[n-2] # + a[n-1] * x_gs[n-1]
-        else:  # 1 <= i <= n - 2:
+            # doesn't land on this case bc of an index out of range???
+            p_i += c[n-q-1] * x_gs[n-1] + a[n-1] * x_gs[n-1]
+        elif i < n - 1:  # 1 <= i <= n - 2:
+            # computes correctly; checked
             p_i += a[i] * x_gs[i]
-            p_i += c[i - 1] * x_gs[i - 1]
-            p_i += b[i] * x_gs[i + 1]
-        print(p_i)
+            p_i += c[i - q] * x_gs[i - q]
+            p_i += b[i] * x_gs[i + p]  # error here for the last one but dont know why
+        # print(p_i)
         prod.append(p_i - f[i])   # A * x_GS - f
-    print(prod)
+    # print(prod)
     return linalg.norm(prod, np.inf)   # ||A * x_GS - f||∞
 
 
