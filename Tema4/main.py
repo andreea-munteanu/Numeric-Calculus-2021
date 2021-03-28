@@ -1,7 +1,6 @@
 from math import sqrt
 import numpy as np
 from numpy import linalg
-from scipy.sparse import diags
 
 
 def extract_data_from_a(file):
@@ -113,11 +112,7 @@ def gauss_seidel(a, b, c, f, epsilon):
 
 def check_solution(x_gs, f, a, b, c, p, q, n):
     """
-    EROARE AICI APARENT DIN CAUZA MEMORIEI
-
-
     Method for determining whether our computed solution 'sol' is correct.
-    We will compute the norm ||A * x_GS - f||∞.
 
     :param x_gs: computed solution
     :param a: main diagonal
@@ -125,36 +120,47 @@ def check_solution(x_gs, f, a, b, c, p, q, n):
     :param c: diagonal starting at p
     :param p: index p
     :param q: index q
-    :return: true if sol is correct with error epsilon, false otherwise
+    :return: ||A * x_GS - f||∞
     """
     a = [1, 2, 3, 4, 5]
     b = [5, 6, 7, 8]
     c = [9, 10, 11, 12]
     x_gs = [100, 200, 300, 400, 500]
     prod = []  # A * x_GS
-    for i in range(0, n):
+    for i in range(0, n - 1):
         print("i=", i)
         p_i = 0
         if i == 0:
             p_i += a[0] * x_gs[0] + b[0] * x_gs[1]
         elif i == n - 1:
-            p_i += c[n-2] * x_gs[n-2] + a[n-1] * x_gs[n-1]
-        else:
+            p_i += c[n-1-q] * x_gs[n-2] # + a[n-1] * x_gs[n-1]
+        else:  # 1 <= i <= n - 2:
             p_i += a[i] * x_gs[i]
-            # p_i += c[i-1] * x_gs[i-1]
-            # p_i += b[i-1] * x_gs[i+1]
+            p_i += c[i - 1] * x_gs[i - 1]
+            p_i += b[i] * x_gs[i + 1]
         print(p_i)
-        prod.append(p_i - f[i])
+        prod.append(p_i - f[i])   # A * x_GS - f
     print(prod)
-    # diagonals = diags(diagonals, [0, p, -q]).toarray()
-    # prod = diagonals.dot(x_gs)       # A * x_GS
-    # res = prod.subtract(f)           # A * x_GS - f
     return linalg.norm(prod, np.inf)   # ||A * x_GS - f||∞
+
+
+def write_sol_in_txt(x_gs, index):
+    """
+    Method for writing x_GS in a destination file with a certain index that we create.
+    File will be called 'x_gs{index}.txt'
+
+    :param x_gs: our computed solution
+    :param index:
+    :return:
+    """
+    file = open(f'x_GS{index}.txt', "w+")
+    for i in x_gs:
+        print(i, sep='\n', file=file)
 
 
 if __name__ == '__main__':
     # extracting data from input files a_i:
-    for i in range(1, 2):
+    for i in range(1, 6):
         print(f'\nRun for files a{i}, f{i}:\n_____________________')
         n, p, q, a, b, c = extract_data_from_a(f'a{i}.txt')
         # print(a, b, c, sep='\n')
@@ -164,8 +170,8 @@ if __name__ == '__main__':
         if check_diagonal(a, eps):
             f = extract_f(f'f{i}.txt')
             x_GS = gauss_seidel(a, b, c, f, eps)
-            print("x_GS: ", x_GS, end='\n')
-            # print(f'Checking solution: {check_solution(x_GS, f, a, b, c, p, q, n)}')
+            write_sol_in_txt(x_GS, i)
+            print(f'Checking solution  with ||A * x_GS - f||∞: {check_solution(x_GS, f, a, b, c, p, q, n)}')
         else:
             print("Main diagonal has 0 values. "
                   "The system cannot be solved using successive over-relaxation iterative method.", end='\n')
