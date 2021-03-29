@@ -92,11 +92,11 @@ def gauss_seidel(a, b, c, f, epsilon):
             i_xgs = xgs[i]
             xgs[i] = (f[i] - sum1 - sum2) / a[i]
             # delta_x = ||x_c - x_p||2 = sqrt(sum(x_c - x_p)))
-            delta_x += (xgs[i] - i_xgs) * (xgs[i] - i_xgs)
+            delta_x = (xgs[i] - i_xgs) * (xgs[i] - i_xgs)
         delta_x = sqrt(delta_x)
         # if we reach convergence, we display the number of iterations:
         if delta_x < epsilon:
-            print(f'\nNumber of iterations: {k}')
+            # print(f'\nNumber of iterations: {k}')
             running = False
         elif delta_x > 10 ** 8:
             running = False
@@ -135,11 +135,11 @@ def check_solution(x_gs, f, a, b, c, p, q, n):
         elif i == n - 1:
             # doesn't land on this case bc of an index out of range???
             p_i += c[n-q-1] * x_gs[n-1] + a[n-1] * x_gs[n-1]
-        elif i < n - 1:  # 1 <= i <= n - 2:
+        elif i < n - 1:
             # computes correctly; checked
             p_i += a[i] * x_gs[i]
             p_i += c[i - q] * x_gs[i - q]
-            p_i += b[i] * x_gs[i + p]  # error here for the last one but dont know why
+            p_i += b[i] * x_gs[i + p]
         # print(p_i)
         prod.append(p_i - f[i])   # A * x_GS - f
     # print(prod)
@@ -167,7 +167,7 @@ if __name__ == '__main__':
         n, p, q, a, b, c = extract_data_from_a(f'a{i}.txt')
         # print(a, b, c, sep='\n')
         # computation error epsilon = 10 ^ (-p)
-        eps = 10 ** (-p)
+        eps = 10 ** (-7)
         # only move forward if main diagonal contains non-zero values only:
         if check_diagonal(a, eps):
             f = extract_f(f'f{i}.txt')
