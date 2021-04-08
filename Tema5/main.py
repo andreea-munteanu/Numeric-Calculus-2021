@@ -104,8 +104,9 @@ def compute_A(A, R):
     :param R: rotation matrix R(p, q)
     :return: A(k+1)
     """
-    prod = np.matmul(R, A, R.transpose())
-    return prod
+    prod = np.matmul(R, A)
+    prod_fin = np.matmul(prod, R.transpose())
+    return prod_fin
 
 
 def compute_U(U, R_T):
@@ -120,16 +121,39 @@ def compute_U(U, R_T):
     return prod
 
 
-def jacobi_eigenvalues(n, A):
+def compute_A_final(U, A_init):
     """
-    Method for obtaining the eigenvalues of symmetric matrix A using the jacobi method.
+    Method for computing A(final) = U_T x A_init x U.
+
+    :param U: unitary matrix
+    :param A_init: initial matrix A
+    :return: A(final)
+    """
+    prod = np.matmul(U.transpose(), A_init)
+    prod_fin = np.matmul(prod, U)
+    return prod_fin
+
+
+def assert_c_s(c, s, epsilon):
+    """
+    :param c: cos(theta)
+    :param s: sin(theta)
+    :return: true if (c ** 2 + s ** 2 = 1), false otherwise
+    """
+    return c ** 2 + s ** 2 in (1 - epsilon, 1 + epsilon)
+
+
+def jacobi(n, A):
+    """
+    Method for obtaining the eigenvalues and eigenvectors of symmetric matrix A using the jacobi method.
 
     :param n: number of columns, rows
     :param A: symmetric matrix A
-    :return: eigenvalues for A as []
+    :return: eigenvalues and eigenvectors for A
     """
-    kmax = 10000
-    U = np.identity(n)  # identity matrix
+    kmax = 10000            # maximum number of while-loop iterations
+    U = np.identity(n)      # identity matrix
+    A_init = get_A_init(A)  # A_init
 
     # computing indices p and q (indices of the greatest non-diagonal element in absolute value):
     max = float('-inf')
@@ -141,17 +165,16 @@ def jacobi_eigenvalues(n, A):
 
     # computing angle theta (c = cos, s = sin, t = tan):
     alpha = (A[p][p] - A[q][q]) / (2 * A[p][q])
-    t = (-1) * alpha + math.sqrt(alpha ** 2 - 1) if alpha >= 0 \
+    t = (-1) * alpha + math.sqrt(alpha * alpha - 1) if alpha >= 0 \
         else alpha * (-1) - math.sqrt(alpha ** 2 - 1)
     c = 1 / math.sqrt(1 + t)
     s = t / math.sqrt(1 + t)
 
-    # while loop:
     while not check_diagonal_matrix(n, A) and kmax > 0:
         R = rotate(n, A, p, q, c, s)
         A = compute_A(A, R)
         U = compute_U(U, R.transpose())
-        
+
         # compute p, q:
         max = float('-inf')
         p, q = 0, 0
@@ -159,6 +182,13 @@ def jacobi_eigenvalues(n, A):
             for j in range(0, i):
                 if A[i][j] > max:
                     max, p, q = A[i][j], i, j
+
+        # A[p][q] = 0 case: A is a non-diagonal matrix -> algorithm stops
+        if A[p][q] > epsilon:  # with this, we could lose the check_diagonal_matrix(n, A) test
+            pass
+        else:
+            break
+
         # computing c, s, t:
         alpha = (A[p][p] - A[q][q]) / (2 * A[p][q])
         t = (-1) * alpha + math.sqrt(alpha ** 2 - 1) if alpha >= 0 \
@@ -166,17 +196,26 @@ def jacobi_eigenvalues(n, A):
         c = 1 / math.sqrt(1 + t)
         s = t / math.sqrt(1 + t)
 
+        # check that s**2 + c ** 2 = 1 (with computation error epsilon)
+        if assert_c_s(c, s, epsilon):
+            pass
+        else:
+            raise ValueError("c ** 2 + s** 2 should be 1.")
+
         # next step in while loop:
         kmax -= 1
 
+    # compute A(final):
+    A_final = compute_A_final(U, A_init)
 
-def assert_c_s(c, s):
-    """
-    :param c: cos(theta)
-    :param s: sin(theta)
-    :return: true if (c ** 2 + s ** 2 = 1), false otherwise
-    """
-    return c ** 2 + s ** 2 == 1
+    # A_final is an (approximately) diagonal matrix, the values from the diagonal are approximations of the eigenvalues
+    # of matrix A, and the columns of matrix U (orthogonal matrix) are approximations of the corresponding eigenvectors.
+    e_values = A_final.diagonal()
+    e_vectors = []
+    for col in range(0, n):
+        e_vectors.append(U[:, col])
+
+    return e_values, e_vectors
 
 
 if __name__ == '__main__':
@@ -186,7 +225,9 @@ if __name__ == '__main__':
     # eigenvalues and eigenvectors:
     if p == n:
         if check_symmetry(p, n, A):
-            print(jacobi_eigenvalues(n, A))
+            eigenvalues, eigenvectors = jacobi(n, A)
+            print("eigenvalues: ", eigenvalues)
+            print("eigenvectors: ", eigenvectors)
     # SVD:
     elif p > n:
         pass
