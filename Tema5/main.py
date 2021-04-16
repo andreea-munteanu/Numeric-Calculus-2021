@@ -1,6 +1,5 @@
 import copy
 import math
-
 import numpy as np
 
 
@@ -63,12 +62,11 @@ def get_A_init(A):
     return A_init
 
 
-def rotate(n, A, p, q, c, s):
+def rotate(n, p, q, c, s):
     """
     Method for rotating matrix A (size n x n) until A[p][q] = A[q][p] = 0. Rotated matrix will be R.
 
     :param n: size of matrix A
-    :param A: matrix A
     :param p: row index
     :param q: col index
     :param c: cos(theta)
@@ -165,13 +163,13 @@ def jacobi(n, A):
 
     # computing angle theta (c = cos, s = sin, t = tan):
     alpha = (A[p][p] - A[q][q]) / (2 * A[p][q])
-    t = (-1) * alpha + math.sqrt(alpha * alpha - 1) if alpha >= 0 \
+    t = (-1) * alpha + math.sqrt(alpha * alpha - 1) if alpha >= 1 \
         else alpha * (-1) - math.sqrt(alpha ** 2 - 1)
     c = 1 / math.sqrt(1 + t)
     s = t / math.sqrt(1 + t)
 
     while not check_diagonal_matrix(n, A) and kmax > 0:
-        R = rotate(n, A, p, q, c, s)
+        R = rotate(n, p, q, c, s)
         A = compute_A(A, R)
         U = compute_U(U, R.transpose())
 
@@ -191,7 +189,7 @@ def jacobi(n, A):
 
         # computing c, s, t:
         alpha = (A[p][p] - A[q][q]) / (2 * A[p][q])
-        t = (-1) * alpha + math.sqrt(alpha ** 2 - 1) if alpha >= 0 \
+        t = (-1) * alpha + math.sqrt(alpha ** 2 - 1) if alpha >= 1 \
             else alpha * (-1) - math.sqrt(alpha ** 2 - 1)
         c = 1 / math.sqrt(1 + t)
         s = t / math.sqrt(1 + t)
@@ -218,10 +216,58 @@ def jacobi(n, A):
     return e_values, e_vectors
 
 
+def SVD(p, n, A, b):
+    """
+    SVD for matrix A is:
+    A = U x S x V_T,  with U[p][p], S[p][n], V[n][n]
+
+    :param p: number of rows in A
+    :param n: number of columns in A
+    :param A: matrix A
+    :param b: Ax = b
+    :return:
+    """
+    assert p != n, "SVD cannot run."
+    U, S, V_T = np.linalg.svd(A)
+    print("\nU: ", U, sep='\n')
+    print("\nS: ", S, sep='\n')
+    print("\nV_T: ", V_T, sep='\n')
+
+    # rank A is the number of strictly positive singular values (values on main diagonal of S):
+    rank = 0
+    min = float("inf")
+    max = float("-inf")
+    for elem in S:
+        if elem > 0:
+            rank += 1
+            if elem < min:
+                min = elem
+        if elem > max:
+            max = elem
+
+    print("rank =", rank)
+
+    # conditioning number: max/min
+    conditioning_number = max/min
+    print("conditioning number =", conditioning_number)
+
+    # Moore-Penrose pseudo-inverse of matrix A:
+    SS = np.zeros((p, n))
+    for i in range(0, rank):
+        SS[i][i] = 1 / S[i]
+    PI_A = np.dot(np.dot(V_T.transpose(), SS), U.transpose())  # pseudo-inverse of A
+
+    # system solution:
+    sol = np.dot(PI_A, b)
+
+    return rank, conditioning_number, PI_A, sol
+
+
 if __name__ == '__main__':
     p, n, eps, A = get_input()
     epsilon = 10 ** (-eps)
     print("n =", n, "\np =", p, "\nepsilon =", epsilon)
+    print("A:\n", A, end='\n')
     # eigenvalues and eigenvectors:
     if p == n:
         if check_symmetry(p, n, A):
@@ -230,8 +276,13 @@ if __name__ == '__main__':
             print("eigenvectors: ", eigenvectors)
     # SVD:
     elif p > n:
-        pass
-    print("A:\n", A)
+        print("value for b (Ax = b): ", end='')
+        b = np.array([1, 1, 1, 1])
+        print(b)
+        rank, conditioning_number, PI_A, sol = SVD(p, n, A, b)
+        print("rank =", rank, "\nconditioning number =", conditioning_number,
+              "\nPseudo-inverse of A:\n", PI_A, "\nsolution for Ax = b:\n", sol)
+
 
 
 
