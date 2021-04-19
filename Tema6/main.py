@@ -1,6 +1,7 @@
 import math
 import random
 import numpy as np
+from sympy import Symbol, Derivative
 
 
 def function(i, x):
@@ -37,15 +38,15 @@ def get_input(index):
     xn, b = file.readline().split()
     xn, b = float(xn), float(b)
 
-    # randomly generating x1, ..., x(n-1):
-    x = [0 for _ in range(0, n+1)]
+    # randomly generating x1, ..., x(n-1) s.t. x(i) > x(i-1):
+    x = [0 for _ in range(0, n + 1)]
     x[0], x[n] = x0, xn
     for i in range(n - 1, 0, -1):
-        x[i] = random.uniform(x[i+1] - 1, x[i+1])
+        x[i] = random.uniform(x[i + 1] - 1, x[i + 1])
 
     # computing y by y[i] = f(x[i]):
-    y = [0 for _ in range(0, n+1)]
-    for i in range(0, n+1):
+    y = [0 for _ in range(0, n + 1)]
+    for i in range(0, n + 1):
         y[i] = function(index, x[i])
 
     # checking file input:
@@ -86,28 +87,59 @@ def least_squares_interpolation(x, y, m, n):
     :param n: size of x and y
     :return:
     """
+    # getting Ba:
     B = [[1 if i == 0 else 0
-         for i in range(0, m + 1)] for _ in range(0, n+1)]
+          for i in range(0, m + 1)] for _ in range(0, n + 1)]
 
     for i in range(0, n + 1):
         for j in range(1, m + 1):
             B[i][j] = x[i] ** j
+    B = np.array(B)
     print(B)
 
-    Y = [[y[i]] for i in range(0, n+1)]
-
-    B = np.array(B)
+    # getting right form of y:
+    Y = [[y[i]] for i in range(0, n + 1)]
     Y = np.array(Y)
 
-    transp = np.transpose(B)
-    aux1 = np.dot(transp, B)
-    aux2 = np.dot(transp, Y)
+    B_T = np.transpose(B)
+    aux1 = np.dot(B_T, B)
+    aux2 = np.dot(B_T, Y)
 
-    a = np.linalg.solve(aux1, aux2)
-    a_list = ([i[0] for i in a])
-    a_list.reverse()
+    # solving the system:
+    res = np.linalg.solve(aux1, aux2)
+    res = ([i[0] for i in res])
+    res.reverse()
+    return res
 
-    return a_list
+
+""" ###################################### QUADRATIC SPLINE FUNCTIONS OF CLASS C1 ###################################"""
+
+
+def first_derivative(index, a):  # works; checked
+    """
+    Method for computing the numerical value of f'(a) = d_a.
+
+    :param index: index of function f
+    :param a: point a
+    :return: f'(a)
+    """
+    value = a
+
+    # calculating the sympy derivative:
+    a = Symbol('a')
+
+    # getting the right function f:
+    if index == 1:
+        f = a ** 2 - 12 * a + 30
+    elif index == 2:
+        f = math.sin(a) - math.cos(a)
+    else:
+        f = 2 * (a ** 3) - 3 * a + 15
+
+    deriv = Derivative(f, a)
+    # returning the value of the derivative in point a:
+    return deriv.doit().subs({a: value})
+    # return derivative(function(index, a), a, dx=1e-6, n=1)  --> doesn't work god knows why
 
 
 if __name__ == '__main__':
@@ -120,5 +152,6 @@ if __name__ == '__main__':
         Pm = least_squares_interpolation(x, y, 10, n)
         print("Pm: ", Pm)
         print("Pn(x) =", horner(Pm, n, 2))
-        print("|Pn(x) - f(x)| =", abs(horner(Pm, n, 2) - horner([1, -12, 30, 0, 12], n, 2)))
+        # print("|Pn(x) - f(x)| =", abs(horner(Pm, n, 2) - horner([1, -12, 30, 0, 12], n, 2)))
+        # print("derivative: ", first_derivative(index, 10))
         # print(n, x0, xn, a, b)
