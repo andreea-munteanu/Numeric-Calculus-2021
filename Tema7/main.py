@@ -47,42 +47,43 @@ def olver(coef, P, P_deriv1_coef, P_deriv2_coef, iteration):
     :param coef: polynomial P (as vector of coefficients)
     :param P: value of polynomial
     :param P_deriv1_coef: P'
-    :param P_deriv2_coef: P''
-    :param iteration:
+    :param P_deriv2_coef: P"
+    :param iteration: number of iteration in course
     :return:
     """
 
     if iteration == 0:
         return "divergence"
 
-    A = max([abs(c) for c in coef[1:]])
+    A = max([abs(c) for c in coef[1:len(coef)]])
     R = (abs(coef[0]) + A) / abs(coef[0])
-    x0 = random.uniform(-R, R)
-    k = 0
-    x = x0
-    kmax = 1000
+    x = random.uniform(-R, R)
+    kmax = 100
     delta_x = 0
     running = True
+
     while running:
 
+        # computing polynomial P in point x and its first and second derivatives:
         P_val = horner(x, coef)
         P_first_derivative = horner(x, P_deriv1_coef)
         P_second_derivative = horner(x, P_deriv2_coef)
 
+        # computing c_k, delta_x and x:
         c_k = (P_val ** 2) * P_second_derivative / (P_first_derivative ** 3)
         delta_x = P_val / P_first_derivative + 0.5 * c_k
-
         x = x - delta_x
-        k = k + 1
+
+        kmax -= 1
 
         if abs(P_first_derivative) <= epsilon:
             return olver(coef, P, P_deriv1_coef, P_deriv2_coef, iteration - 1)
 
-        if not (epsilon <= abs(delta_x) <= 10 ** 8 and k <= kmax):
+        if not (epsilon <= abs(delta_x) <= 10 ** 8 and kmax >= 0):
             running = False
 
     if abs(delta_x) < epsilon:
-        return x  # x star
+        return x
     else:
         # print("divergence")
         return olver(coef, P, P_deriv1_coef, P_deriv2_coef, iteration - 1)
@@ -132,4 +133,10 @@ if __name__ == "__main__":
                     new = False
             if new:
                 solutions.append(solution)
+
+        # writing in file:
+        f = open("solutions.txt", "w")
+        f.write(str([i for i in solutions]))
+        f.close()
+
         print(solutions)
